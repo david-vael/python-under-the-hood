@@ -872,7 +872,7 @@ Answer: `11 <class 'int'>`
 This question highlights the structural architecture of the boolean type system and implicit numeric promotion inside the CPython runtime engine.
 
 **CPython Object Architecture (`bool` subclassing `int`):** In Python, booleans are not an independent primitive type. At the core C layer, the boolean type structural definition (`PyBool_Type`) explicitly inherits from the integer type structural definition (`PyLong_Type`).
-
+```c
 // Conceptual CPython under-the-hood structural definition
 PyTypeObject PyBool_Type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0)
@@ -880,3 +880,4 @@ PyTypeObject PyBool_Type = {
     sizeof(PyLongObject), // Booleans use the exact same memory footprint as a standard integer!
     ...
 };
+```
