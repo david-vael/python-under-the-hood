@@ -33,5 +33,7 @@ and avoid errors.
 > user_age = 25
 >```
 > #Invalid
-> #1st_name = "Bob" # SyntaxError
+>```text
+>  #1st_name = "Bob" # SyntaxError
+>```
   
