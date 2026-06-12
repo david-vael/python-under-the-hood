@@ -285,3 +285,84 @@ One of the most common mistakes in Python is trying to concatenate or perform op
 > [!NOTE]
 > **Type Safety**
 > Python is a strongly typed language, meaning it won't implicitly force a data type change (like turning an integer into a string) during a concatenation operation. You must explicitly convert the types yourself.
+
+### Practice Questions – Variables & Types
+
+#### Level 1
+1. Create three variables to store your name, age, and height. Print their types.
+2. Assign value 50 to two variables in a single line.
+3. Convert string "25" into integer and multiply it by 2.
+4. Write a variable name that is invalid and explain why.
+
+#### Level 2
+1. What will be the output?
+   ```python
+   x = 10
+   x = "Ten"
+   print(type(x))
+
+2. Fix the error:
+   ```python 
+   price = "100"
+   total = price + 50
+
+3. Write code to swap two variables without using a third variable.
+4.Explain in one line: What is Dynamic Typing?
+
+**All questions in this document have been carefully designed to align with the concepts covered in your class. They progress from foundational understanding to advanced application, ensuring comprehensive practice at every level.**
+   
+### Level 3    
+
+1. Predict the output:
+   ```python
+   a = b = 5
+   a = 10
+   print(b)
+
+2. What will be the output and why?
+   ```python
+   x = "5"
+   y = 2
+   print(x * y)
+
+3. Identify valid variable names and explain why or why not:
+   ```text
+   _user
+   2value
+   total_price
+   class
+   userName
+
+4. Convert the following into correct types and print their types:
+    ```python
+    "50", 20, 3.5, 0
+
+          
+#### Level 4
+1. Explain the difference between `==` and `is`:
+   ```python
+   a = 1000
+   b = 1000
+   print(a == b)
+   print(a is b)
+
+2. Predict output and explain memory behavior:
+   ```python
+   a = [1, 2, 3]
+   b = a
+   a.append(4)
+   print(b)
+
+3. What will be the output?
+   ```python
+   x = True
+   y = 10
+   print(x + y, type(x + y))
+
+4. Why does the data type change here?
+   ```python
+   x = 5
+   x = x / 2
+   print(type(x))
+
+          
