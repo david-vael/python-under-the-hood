@@ -24,7 +24,9 @@ programmer to save information and reuse or modify it later during execution.
 Python has specific rules and conventions for naming variables to ensure code clarity
 and avoid errors.
 ###Required Rules
+
 **- Must start with a letter or underscore:** Variable names cannot begin with a number.
+
 > [!NOTE]
 > **Valid**
 > ```python
@@ -39,6 +41,7 @@ and avoid errors.
 > ```
 
 **Can only contain alphanumeric characters and underscores:** Letters (a-z, A-Z), numbers (0-9), and underscores (`_`) are allowed. Special characters like `@`, `#`, `$`, `%`, etc. are not allowed.
+
 > [!NOTE]
 > **Valid Examples**
 > ```python
