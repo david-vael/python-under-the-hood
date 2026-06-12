@@ -365,4 +365,199 @@ One of the most common mistakes in Python is trying to concatenate or perform op
    x = x / 2
    print(type(x))
 
-          
+5. Identify the error and fix it:
+   ```python
+   age = "18"
+   if age > 10:
+   print("Adult")           
+
+### Data Types in Python
+A data type defines the kind of value a variable can hold. Python automatically assigns a data type based on the value stored in the variable.
+
+#### 1. Integer (`int`)
+Stores whole numbers (positive or negative).
+
+```python
+x = 10
+y = -5
+```
+Integers are used when you need to work with whole numbers without decimal points. They can be positive, negative, or zero.
+
+#### 2. Float (`float`)
+Stores decimal numbers.
+
+```python
+price = 19.99
+pi = 3.14
+```
+Floats are used for numbers that require precision with decimal points. They're essential for calculations involving money, measurements, or mathematical constants.
+
+#### 3. String (`str`)
+Stores text inside quotes.
+
+```python
+name = "Alex"
+message = 'Hello'
+```
+Strings represent text data. You can use either single (') or double (") quotes. Strings are used for names, messages, or any textual information.
+
+#### 4. Boolean (`bool`)
+Stores only two values: `True` or `False`.
+
+```python
+is_active = True
+is_logged_in = False
+```
+Booleans are used for logical conditions and control flow in programs. They help make decisions (like in if statements) and represent yes/no or on/off states.
+
+#### 5. NoneType (`None`)
+Represents the absence of a value.
+
+```python
+x = None
+```
+__None__ is a special constant in Python that represents "nothing" or "no value." It's often used as a placeholder or to indicate that a variable hasn't been assigned a meaningful value yet.
+
+### Checking Data Type
+
+```python
+x = 5
+print(type(x))  # <class 'int'>
+```
+The **type()** function returns the data type of a variable. This is useful for debugging or when you need to verify what kind of data you're working with. In this example, **type(x)** returns **<class 'int'>** because **x** holds an integer value.
+
+### Key Takeaways
+
+* **Python is dynamically typed:** You don't need to declare data types explicitly; Python figures it out based on the value you assign.
+* **Type conversion:** You can convert between types using functions like `int()`, `float()`, `str()`, and `bool()`.
+* **Understanding data types:** Knowing which data type to use helps you write efficient code and avoid errors in your programs.
+
+  
+### Additional Notes
+
+#### 1. Boolean Internal Behavior
+`True` behaves like `1` and `False` behaves like `0` in arithmetic operations.
+
+```python
+print(True + 5)    # 6
+print(False * 10)  # 0
+```
+In Python, booleans are a subclass of integers. This means **True** equals **1** and **False** equals **0** when used in mathematical operations. This can be useful in certain calculations but should be used carefully to avoid confusion.
+
+#### 2. Case Sensitivity Reminder
+Strings are case-sensitive (`"Hello"` ≠ `"hello"`).
+
+```python
+word1 = "Hello"
+word2 = "hello"
+print(word1 == word2)  # False
+```
+Python treats uppercase and lowercase letters as different characters. When comparing strings, **"Hello"** and **"hello"** are not equal. This is important to remember when working with user input, file names, or any text comparison.
+
+### Input and Output
+
+#### 1. `input()` Function
+The `input()` function allows your program to receive data from the user through the keyboard. It pauses the program execution and waits for the user to type something and press Enter. By default, whatever the user types is returned as a string, even if they enter numbers. User input is always stored as text unless converted.
+
+```python
+name = input("Enter your name: ")
+print(f"Hello, {name}!")
+```
+
+#### 2. Type Casting with Input
+Since `input()` always returns a string, you'll need to convert it to other data types when working with numbers or other data types. This is done using type casting functions like `int()`, `float()`, or `bool()`. Invalid input may cause errors.
+
+```python
+age = int(input("Enter your age: "))
+height = float(input("Enter your height in meters: "))
+print(f"You are {age} years old and {height}m tall.")
+```
+
+#### 3. `print()` Function
+The `print()` function displays output to the console. It can handle multiple values separated by commas, which are automatically separated by spaces when printed. You can also use the `sep` and `end` parameters to customize the output format.
+
+```python
+print("Hello", "World")
+print("Python", "is", "fun", sep="-")
+print("Hello", end=" ")
+print("World")
+```
+
+#### 4. Formatted Output (f-strings)
+F-strings (formatted string literals) provide a clean and readable way to embed expressions inside string literals. They start with an `f` or `F` before the opening quote, and expressions are placed inside curly braces `{}`. This is the recommended approach for string formatting in modern Python.
+
+```python
+name = "Alex"
+age = 18
+score = 95.5
+print(f"My name is {name} and I am {age} years old.")
+print(f"I scored {score:.1f}% on the test.")
+```
+
+#### 5. Escape Characters
+Escape characters are special sequences that start with a backslash `\` and allow you to include special characters in strings. 
+
+The most common ones are:
+* `\n` $\rightarrow$ Creates a new line
+* `\t` $\rightarrow$ Inserts a tab space
+* `\\` $\rightarrow$ Inserts a backslash
+* `\'` and `\"` $\rightarrow$ Insert quotes without ending the string
+
+Example:
+
+```python
+print("Hello\nWorld")
+print("Name:\tAlex\nAge:\t18")
+print("She said, \"Python is awesome!\"")
+```
+
+### Comments in Python
+
+#### 1. Single-Line Comments
+Single-line comments are used for short explanations or notes about specific lines of code. They start with the `#` symbol, and everything after it on that line is ignored by Python.
+
+Example:
+
+```python
+# This is a comment
+x = 10  # variable storing age
+```
+
+#### 2. Multi-Line Comments
+Python doesn't have a dedicated multi-line comment syntax, but there are two common approaches:
+* **Multiple `#` symbols:** Use `#` at the beginning of each line.
+* **Triple quotes:** Use triple quotes `"""` or `'''` (primarily used for documentation strings or docstrings).
+
+Example using multiple `#` symbols:
+```python
+# This function calculates the area of a rectangle
+# It takes width and height as arguments
+# and returns the calculated area value
+def calculate_area(width, height):
+    return width * height
+```
+
+### Basic Errors / Exceptions in Python
+
+#### 1. SyntaxError
+A `SyntaxError` occurs when Python encounters code that doesn't follow the language's grammatical rules. This is like making a spelling or punctuation mistake that prevents Python from understanding what you're trying to do.
+
+Example:
+
+```python
+print("Hello"
+```
+This raises a **SyntaxError** because the closing parenthesis is missing. Python expects proper structure and will refuse to run code with syntax mistakes.
+
+#### 2. NameError
+A NameError happens when you try to use a variable or function name that Python doesn't recognize. This typically means you're referencing something before it has been defined or you've misspelled the name.
+
+Example:
+
+```python
+print(age)  # age not defined
+```
+Since **age** was never created or assigned a value, Python doesn't know what you're referring to and raises a *'NameError'.
+
+
+  
