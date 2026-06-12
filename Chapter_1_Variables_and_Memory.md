@@ -26,10 +26,10 @@ and avoid errors.
 ###Required Rules
 **- Must start with a letter or underscore: Variable names cannot begin with a number.**
 [!NOTE]
-> # Valid
+> #Valid
 > name = "Alice"
 > _count = 10
 > user_age = 25
-> # Invalid
-> # 1st_name = "Bob" # SyntaxError
+> #Invalid
+> #1st_name = "Bob" # SyntaxError
   
