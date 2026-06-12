@@ -17,8 +17,6 @@ I am a **contributing member of the Python Software Foundation (PSF)**. This rep
 
 ## 🗺️ Syllabus & Roadmap
 
-## 🗺️ Detailed Syllabus & Roadmap
-
 This repository follows a multi-level path designed to take developers from core programming concepts to advanced memory layout engineering.
 
 ### 🔹 Module 1: Python Programming Fundamentals
