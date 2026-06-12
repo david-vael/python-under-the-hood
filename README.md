@@ -17,11 +17,20 @@ I am a **contributing member of the Python Software Foundation (PSF)**. This rep
 
 ## 🗺️ Syllabus & Roadmap
 
-The guide is structured sequentially, moving from fundamental memory concepts to advanced runtime behavior:
+## 🗺️ Detailed Syllabus & Roadmap
 
-* [x] **[Chapter 1: Variables and Memory](./Chapter_1_Variables_and_Memory.md)** – *Understanding object allocation, variable references, dynamic typing, and invalid syntax naming errors.*
-* [ ] **Chapter 2: The CPython Object Model** – *Deep dive into `PyObject`, type descriptors, and how built-in types (lists, dicts, strings) are represented in C.*
-* [ ] **Chapter 3: Garbage Collection Mechanics** – *How reference counting works, detecting cyclic references, and tuning the generational GC.*
+This repository follows a multi-level path designed to take developers from core programming concepts to advanced memory layout engineering.
+
+### 🔹 Module 1: Python Programming Fundamentals
+* [x] **[Chapter 1: Variables and Memory](./Chapter_1_Variables_and_Memory.md)** – *Understanding object allocation, variable references, and the mechanics of data storage.*
+* [ ] **Chapter 2: Naming Rules & Identifiers** – *Required naming syntax, case-sensitivity rules, reserved keywords, and invalid syntax error management.*
+* [ ] **Chapter 3: Dynamic Typing Essentials** – *How runtime type binding works and managing variables that change types fluidly during execution.*
+* [ ] **Chapter 4: Style Guidelines & Best Practices** – *Mastering `snake_case`, avoiding single-character namespaces, and adhering to clean CPython conventions.*
+
+### 🔸 Module 2: Low-Level Architecture (Upcoming Chapters)
+* [ ] **Chapter 5: The CPython Object Model** – *Deep dive into `PyObject`, type descriptors, and how built-in structures (lists, dicts, strings) are represented in C.*
+* [ ] **Chapter 6: Garbage Collection Mechanics** – *How reference counting operates behind the scenes, detecting cyclic references, and tuning generational GC thresholds.*
+* [ ] **Chapter 7: Virtual Machine Execution Loop** – *From source code parsing and Abstract Syntax Trees (AST) to bytecode generation and interpreter execution.*
 
 ---
 
@@ -33,4 +42,3 @@ As a community-driven initiative, contributions are incredibly welcome! Whether 
 2. Fork the repository and create your feature branch.
 3. Submit a Pull Request.
 
-*Special thanks to fellow PSF members and core developers who review and provide technical feedback on these chapters!*
