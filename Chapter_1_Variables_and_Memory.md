@@ -801,3 +801,26 @@ b = 1000
 print(a == b)
 print(a is b)
 ```
+**Answer** : 
+`print(a == b)` outputs `True`
+`print(a is b)` outputs `False`
+
+**What's happening behind the scenes:**
+Python treats value comparison and structural identity as two fundamentally distinct low-level operations inside its runtime engine.
+
+**The Value Comparison Operator (`==` Mechanics):** When CPython encounters the `==` operator, it performs a structural equality check by looking up the left operand's type descriptor and invoking its native comparison slot function, known at the C layer as `tp_richcompare` (which maps to the special method `__eq__` in Python). For integers, this function bypasses memory address locations entirely. It reads the raw sign-and-digit bit arrays inside both `PyLongObject` structures on the heap, notices that the numeric payload values are both exactly `1000`, and returns a pointer to the global `PyBool_True` singleton object.
+
+**The Identity Operator (`is` Mechanics):** The `is` operator checks for object identity. At the bytecode level, it translates to a highly optimized, lightning-fast `IS_OP` instruction. Unlike `==`, it does not trigger any type descriptor method lookups or slot evaluations. Instead, it evaluates the pointers directly on the virtual machine stack. It behaves exactly like comparing raw memory addresses in C:
+            $$id(a) == id(b)$$
+
+Because the integer `1000` falls completely outside of CPython’s static small integer cache range (which permanently binds objects from `-5` to `256` at startup), each assignment statement forces CPython to allocate a brand-new, isolated memory block on the heap. Since `a` and `b` reference two entirely different `PyLongObject` memory addresses, the pointer comparison fails and returns `PyBool_False`.
+
+### 📋 Key Structural Breakdown
+
+| Feature | == (Equality) | is (Identity) |
+| :--- | :--- | :--- |
+| **What it checks** | Do the objects have the same value/content? | Do the variables point to the exact same memory address? |
+| **CPython Mechanics** | Calls the type's `tp_richcompare` (`__eq__`) slot loop. | Executes the `IS_OP` instruction (pointer comparison). |
+| **Performance Overhead** | Slower (requires object attribute evaluation). | Incredibly fast (direct memory address match). |
+| **Primary Use Case** | Data checks, structural/mathematical comparisons. | Checking singleton references (e.g., `variable is None`). |
+
