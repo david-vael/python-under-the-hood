@@ -827,3 +827,56 @@ Because the integer `1000` falls completely outside of CPython’s static small 
 | **Performance Overhead** | Slower (requires object attribute evaluation). | Incredibly fast (direct memory address match). |
 | **Primary Use Case** | Data checks, structural/mathematical comparisons. | Checking singleton references (e.g., `variable is None`). |
 
+**2. Predict the output and explain the underlying memory behavior:**
+```python
+a = [1, 2, 3]
+b = a
+a.append(4)
+print(b)
+```
+Answer: `[1, 2, 3, 4]`
+
+**What's happening behind the scenes:**
+This question targets the architectural mechanics of mutable objects and pointer alias replication inside Python's heap space.
+
+**The List Allocation (`a = [1, 2, 3]`):** When CPython evaluates a list literal, it allocates a mutable container object known at the C layer as a `PyListObject`. Crucially, a Python list does not actually store raw data items sequentially inside its own block. Instead, a `PyListObject` contains a pointer (`ob_item`) pointing to a secondary, dynamically allocated array of memory addresses. Each address in that array holds a pointer to a separate `PyLongObject` on the heap (representing 1, 2, and 3). The variable `a` inside your local namespace dictionary (`locals()`) is assigned a direct pointer to this master `PyListObject`.
+
+**The Pointer Copy (`b = a`):** The assignment statement `b = a` does not copy the list object, nor does it duplicate the items inside it. Instead, CPython executes a lightweight pointer assignment. The identifier string `"b"` is added to your namespace dictionary, and it is given a copy of the exact same memory address value held by `a`. At this step, both `a` and `b` are reference labels pointing to the identical `PyListObject` structure. The internal reference counter (`ob_refcn`t) of that specific list object is incremented to 2.
+
+**In-Place Mutation (`a.append(4)`):** Because lists are mutable, operations like `.append()` modify the existing object directly in memory rather than generating a new one. When `a.append(4)` is called, CPython invokes its internal C function `list_append()`. It checks if the underlying contiguous pointer array has enough allocated capacity slot padding. If it does (or after resizing via `list_resize()`), it inserts a new pointer to a `PyLongObject` representing 4 at the end of the internal array.
+
+**The Output (`print(b)`):** When you pass b to the `print()` function, the interpreter looks up the identifier `"b"` in the namespace, follows its pointer address to the heap, and reads the target `PyListObject`. Because `a` and `b` point to the exact same object, any modification performed via the label `a` is instantly visible when inspecting the object through the label `b`.
+           
+$$
+id(a) == id(b)
+$$
+
+### 📋 Key Structural Breakdown
+
+| Action | Memory State / Allocation Overhead | Impact on Reference Count |
+| :--- | :--- | :--- |
+| `a = [1, 2, 3]` | Allocates one `PyListObject` structure + an array of 3 item pointers on the heap. | `ob_refcnt` of the list = 1 |
+| `b = a` | Zero heap allocation overhead. Copies a single 8-byte memory address into the namespace map. | `ob_refcnt` of the list = 2 |
+| `a.append(4)` | Modifies the existing array buffer in-place (may trigger a C `realloc` if array capacity limits are hit). | No change to the list's reference count |
+
+3. What will be the output?
+
+```python
+x = True
+y = 10
+print(x + y, type(x + y))
+```
+Answer: `11 <class 'int'>`
+
+**What's happening behind the scenes:**
+This question highlights the structural architecture of the boolean type system and implicit numeric promotion inside the CPython runtime engine.
+
+**CPython Object Architecture (`bool` subclassing `int`):** In Python, booleans are not an independent primitive type. At the core C layer, the boolean type structural definition (`PyBool_Type`) explicitly inherits from the integer type structural definition (`PyLong_Type`).
+
+// Conceptual CPython under-the-hood structural definition
+PyTypeObject PyBool_Type = {
+    PyVarObject_HEAD_INIT(&PyType_Type, 0)
+    "bool",
+    sizeof(PyLongObject), // Booleans use the exact same memory footprint as a standard integer!
+    ...
+};
