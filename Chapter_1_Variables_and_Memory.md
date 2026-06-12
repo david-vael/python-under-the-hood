@@ -547,7 +547,7 @@ Example:
 ```python
 print("Hello"
 ```
-This raises a **SyntaxError** because the closing parenthesis is missing. Python expects proper structure and will refuse to run code with syntax mistakes.
+This raises a `SyntaxError` because the closing parenthesis is missing. Python expects proper structure and will refuse to run code with syntax mistakes.
 
 #### 2. NameError
 A NameError happens when you try to use a variable or function name that Python doesn't recognize. This typically means you're referencing something before it has been defined or you've misspelled the name.
@@ -557,7 +557,34 @@ Example:
 ```python
 print(age)  # age not defined
 ```
-Since **age** was never created or assigned a value, Python doesn't know what you're referring to and raises a *'NameError'.
+Since `age` was never created or assigned a value, Python doesn't know what you're referring to and raises a `NameError`.
 
+#### 3. TypeError
+A `TypeError` occurs when you try to perform an operation on incompatible data types. Python is strict about how different types interact, so mixing types inappropriately will cause this error.
 
-  
+Example:
+
+```python
+   "5"+5
+```
+Here, you're trying to add a string (` "5" `) to an integer (`5`). Python doesn't know whether to treat this as text concatenation or mathematical addition, so it raises a `TypeError`.
+
+#### 4. IndentationError
+An IndentationError is unique to Python, which uses whitespace (spaces or tabs) to define code blocks. If your indentation is inconsistent or incorrect, Python can't determine the structure of your code.
+
+Example:
+
+  ```python
+     if True:
+     print("Hello")
+```
+The `print` statement should be indented to show it belongs inside the `if` block. Without proper indentation, Python raises an `IndentationError`.
+
+#### Quick Tips
+**Always close parentheses, brackets, and quotes** to avoid `SyntaxErrors`.
+
+**Define variables before using them** to prevent `NameErrors`.
+
+**Be mindful of data types** when performing operations to avoid `TypeErrors`.
+
+**Use consistent indentation** (typically 4 spaces) throughout your code to prevent `IndentationErrors`.
