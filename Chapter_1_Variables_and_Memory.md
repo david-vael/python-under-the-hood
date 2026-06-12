@@ -34,6 +34,6 @@ and avoid errors.
 >```
 > #Invalid
 >```text
->  #1st_name = "Bob" # SyntaxError
+>  1st_name = "Bob"    **# SyntaxError**
 >```
   
