@@ -881,3 +881,31 @@ PyTypeObject PyBool_Type = {
     ...
 };
 ```
+Because of this architectural decision made early in Python's development to preserve backward compatibility, every boolean object is structurally a `PyLongObject` under the hood.
+
+**The Singleton Memory Mapping:** To avoid allocating memory constantly during runtime execution, CPython initializes exactly two permanent boolean objects globally at interpreter startup:
+
+  * `_Py_TrueStruct` (referenced via `True`) holding an internal value payload of `1`.
+
+  * `_Py_FalseStruct` (referenced via `False`) holding an internal value payload of `0`.
+
+The variable `x` simply holds a pointer directly to the immutable global `True` singleton object on the heap.
+
+**Binary Addition & Type Promotion Mechanics (`+`):** When CPython executes the binary addition instruction (`BINARY_OP`), it inspects the type descriptors of both operands. The left operand x points to `PyBool_Type`, while the right operand y points to `PyLong_Type`. Because `PyBool_Type` inherits from `PyLong_Type`, it does not implement its own unique arithmetic slot logic. Instead, the operator lookup loops directly up to the parent integer type slot function, known as `long_add`. The `long_add` function reads the integer value payload of `True` (which is `1`) and the value payload of `10`, performing standard native C-level binary addition.
+
+**The Output and Final Type:** The arithmetic operation yields a value of `11`. Because the operation was executed by the integer type’s native arithmetic system (`long_add`), the resulting memory chunk is packed inside a standard, brand-new `PyLongObject` on the heap. The structural identity of the boolean is entirely shed during the math conversion pass. Therefore, calling `type(x + y)` evaluates directly to `<class 'int'>` instead of keeping any boolean traits.
+
+**📋 Key Behavior Verification**
+```python
+print(True + True)      # Output: 2   -> (1 + 1) via long_add()
+print(False * 100)      # Output: 0   -> (0 * 100) via long_mul()
+print(True - False)     # Output: 1   -> (1 - 0) via long_sub()
+```
+
+4. Why does the data type change here?
+
+```python
+x = 5
+x = x / 2
+print(type(x))
+```
