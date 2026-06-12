@@ -588,3 +588,62 @@ The `print` statement should be indented to show it belongs inside the `if` bloc
 **Be mindful of data types** when performing operations to avoid `TypeErrors`.
 
 **Use consistent indentation** (typically 4 spaces) throughout your code to prevent `IndentationErrors`.
+
+---
+
+# 🔑 Answer Key – Chapter 1
+
+#### Level 1
+1. Create three variables to store your name, age, and height. Print their types.
+
+```python
+# Assigning values
+my_name = "David"       # String (str)
+my_age = 18            # Integer (int)
+my_height = 5.9        # Floating-point number (float)
+
+# Printing their values and types
+print("Name:", my_name, "Type:", type(my_name))
+print("Age:", my_age, "Type:", type(my_age))
+print("Height:", my_height, "Type:", type(my_height))
+```
+**What's happening behind the scenes:**
+Python is a dynamically typed language. You don't have to explicitly declare whether a variable is a text or a number before using it; Python automatically figures out the data type at runtime based entirely on the value you assign to it.
+
+2. Assign value 50 to two variables in a single line.
+
+```python
+# Chained assignment
+x = y = 50
+
+print("x:", x)
+print("y:", y)
+```
+**What's happening behind the scenes:**
+This is called a chained assignment. Instead of creating two separate memory spaces holding the integer 50, both variable labels (`x` and `y`) point directly to the exact same single integer object 50 in Python's internal heap memory.
+
+3. Convert string "25" into integer and multiply it by 2.
+
+```python
+# Raw string value
+string_val = "25"
+
+# Type casting to integer
+converted_int = int(string_val)
+
+# Mathematical operation
+result = converted_int * 2
+print("Result:", result)  # Output: 50
+```
+**What's happening behind the scenes:**
+If you don't explicitly cast the string using `int()`, running ` "25" * 2 ` triggers string replication, which would yield the text ` "2525" ` instead of performing math. Using ` int() ` changes the data type completely.
+
+4. Write a variable name that is invalid and explain why.
+
+```python
+# Invalid example:
+1st_place = "Gold Medal"  # Throws a SyntaxError
+```
+**What's happening behind the scenes:**
+Python syntax strictly prohibits variable names from beginning with a number. They must always start with either a letter or an underscore (`_`). If the compiler sees a numeric digit at the very beginning of a word label, it fails to parse it and instantly flags a `SyntaxError`.
+
