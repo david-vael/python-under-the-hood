@@ -40,7 +40,7 @@ and avoid errors.
 > 1st_name = "Bob"    # SyntaxError
 > ```
 
-**Can only contain alphanumeric characters and underscores:** Letters (a-z, A-Z), numbers (0-9), and underscores (`_`) are allowed. Special characters like `@`, `#`, `$`, `%`, etc. are not allowed.
+**- Can only contain alphanumeric characters and underscores:** Letters (a-z, A-Z), numbers (0-9), and underscores (`_`) are allowed. Special characters like `@`, `#`, `$`, `%`, etc. are not allowed.
 
 > [!NOTE]
 > **Valid Examples**
@@ -55,6 +55,17 @@ and avoid errors.
 > my-variable = 50     # SyntaxError: can't assign to expression
 > user@name = "John"   # SyntaxError: invalid syntax
 > ```
+
+- **Case-sensitive:** Variables with different cases are treated as different variables.
+> [!NOTE]
+> ```python
+> age = 20
+> Age = 30
+> AGE = 40
+> 
+> print(age)  # Output: 20
+> print(Age)  # Output: 30
+> print(AGE)  # Output: 40
 
 
   
