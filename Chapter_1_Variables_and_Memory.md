@@ -815,6 +815,7 @@ Python treats value comparison and structural identity as two fundamentally dist
 $$
 id(a) == id(b)
 $$
+
 Because the integer `1000` falls completely outside of CPython’s static small integer cache range (which permanently binds objects from `-5` to `256` at startup), each assignment statement forces CPython to allocate a brand-new, isolated memory block on the heap. Since `a` and `b` reference two entirely different `PyLongObject` memory addresses, the pointer comparison fails and returns `PyBool_False`.
 
 ### 📋 Key Structural Breakdown
