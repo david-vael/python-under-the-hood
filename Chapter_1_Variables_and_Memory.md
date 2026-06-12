@@ -647,3 +647,157 @@ If you don't explicitly cast the string using `int()`, running ` "25" * 2 ` trig
 **What's happening behind the scenes:**
 Python syntax strictly prohibits variable names from beginning with a number. They must always start with either a letter or an underscore (`_`). If the compiler sees a numeric digit at the very beginning of a word label, it fails to parse it and instantly flags a `SyntaxError`.
 
+#### Level 2
+1. What will be the output?
+
+```python
+x = 10
+x = "Ten"
+print(type(x))
+```
+Answer: `<class 'str'>`
+
+**What's happening behind the scenes:**
+Python is a dynamically typed language, which means variable names are not typed containers; they are merely references (or labels) pointing to concrete objects allocated on the heap memory.
+
+**First Assignment** (`x = 10`): CPython allocates a `PyLongObject` structure in memory to represent the integer `10`. The identifier `x` is added to the local namespace dictionary (`locals()`), pointing directly to this integer object's memory address. The object's reference count is incremented to `1`.
+
+**Reassignment** (`x = "Ten"`): CPython creates a brand new `PyUnicodeObject` structure to represent the string `"Ten"`. The reference pointer inside the `x` label is updated to point to this new string address.
+
+**Memory Cleanup**: Because `x` shifted its focus, the reference count of the integer object `10` drops by 1. Since its reference counter hits exactly `0`, CPython's reference counting mechanism immediately deallocates the object (or leaves it to the cyclical Garbage Collector if it were a container type), freeing up that heap space.
+
+2. Fix the error:
+
+```python
+price = "100"
+total = price + 50
+```
+```python
+price = "100"
+total = int(price) + 50  # Type casting the string to an integer
+print(total)             # Output: 150
+```
+**What's happening behind the scenes:**
+Python is a **strongly typed** language, meaning the interpreter strictly enforces type boundaries and refuses to implicitly coerce incompatible data types during operations.
+
+**The Failure Mechanics** (`"100" + 50`): When CPython encounters the binary addition operator (`+`), it checks the left operand's type structure. For a string, it looks for an internal C slot function named `nb_add` (numeric addition) or `sq_concat` (sequence concatenation). A string object knows how to concatenate with another string, but when it detects that the right operand is a `PyLongObject` (integer), it fails to find a valid operation rule and immediately raises a `TypeError`.
+
+**The Memory Fix** (`int(price)`): By calling the `int()` constructor, you tell CPython to spin up a new integer object in memory by parsing the character array inside the string. Once both objects share the same numeric type system, CPython can safely execute the underlying C-level addition and bind the result to `total`.
+
+#### Level 2
+3. Write code to swap two variables without using a third variable.
+
+```python
+a = 5
+b = 10
+
+# The Pythonic tuple unpacking swap
+a, b = b, a
+
+print("a:", a, "b:", b)  # Output: a: 10 b: 5
+```
+**What's happening behind the scenes:**
+In many traditional languages, swapping values requires a manual third variable to avoid overwriting data in memory. Python elegantly resolves this using an optimization called **tuple packing and unpacking.**
+
+**The Right-Hand Evaluation** (`b, a`): CPython executes from right to left. When it evaluates `b, a`, it pushes the memory addresses of both objects onto its internal evaluation stack. At the bytecode level, it reads these values sequentially using `LOAD_NAME`.
+
+**The Stack Swap Optimization**: Historically, Python would explicitly call `BUILD_TUPLE` to wrap these references into a temporary heap-allocated `PyTupleObject`. However, modern CPython implementations feature a specific bytecode optimization for small swaps. Instead of allocating an actual tuple object in memory, it keeps the references directly on the evaluation stack and utilizes the highly optimized `SWAP` **bytecode instruction** to reorder the top elements of the stack.
+
+**Unpacking** (`a, b =`): Finally, the reordered values on the stack are popped off sequentially via `STORE_NAME` and bound to the identifiers on the left-hand side. The labels are updated seamlessly in a single atomic instruction cycle without any heap allocation overhead.
+
+#### Level 2
+4. Explain in one line: What is Dynamic Typing?
+
+**Answer:** Dynamic typing means variable data types are checked and associated at runtime (when the program executes) rather than at compile time, allowing a single variable label to reference completely different data types over time.
+
+**What's happening behind the scenes:**
+In statically typed languages (like C++ or Java), type information belongs to the *variable slot* itself, which is fixed in memory during compilation. In Python, **variables have absolutely no type; only the objects themselves carry types.** Every single entity in Python is a C structure wrapped as a `PyObject`. Inside the foundational header of every object is a field called `ob_type`, which is a pointer pointing directly to its type descriptor object (such as `PyLong_Type` for integers or `PyUnicode_Type` for strings). Because data names are just simple string pointers in a dictionary namespace tracking these structures, the interpreter doesn't care what type an object is until it attempts an operation on it at runtime, fetching and checking the object's `ob_type` layout on the fly.
+
+#### Level 3
+1. Predict the output:
+
+```python
+a = b = 5
+a = 10
+print(b)
+```
+Answer: `5`
+
+**What's happening behind the scenes:**
+This question highlights the foundational mechanics of namespace pointer manipulation and object immutability in Python.
+
+**The Chained Assignment** (`a = b = 5`): Python executes this from right to left. Because `5` falls within CPython's static global integer cache (which pre-allocates integers from `-5` to `256` at interpreter startup), CPython doesn't even need to allocate new heap memory. It fetches the existing, permanent `PyLongObjec`t address for `5`. The keys `"b"` and then `"a"` are inserted into the local namespace dictionary (`locals()`), with both storing a pointer to this exact same memory address. The cached object's internal reference counter is incremented.
+
+**The Reassignment** (`a = 10`): Because integers are strictly )**immutable**, the interpreter cannot modify the value inside the memory address to which `a` points. Instead, when `a = 10` runs, CPython fetches the memory address of the cached integer object `10` and updates the pointer of the key `"a"` in the namespace dictionary to point to it.
+
+**The Result:** The pointer for the key `"b"` remains completely untouched, securely anchored to the original shared memory address of `5`. Thus, printing `b` outputs `5`.
+
+2. What will be the output and why?
+
+```python
+x = "5"
+y = 2
+print(x * y)
+```
+**Answer: 55**
+
+**What's happening behind the scenes:**
+This question demonstrates **operator overloading**, where the exact C-level function executed by a symbol (`*`) is determined dynamically by the type structures of the objects involved.
+
+**The Slot Lookup Mechanics:** When CPython evaluates the binary multiplication operator (`*`), it looks at the operands. Because the left operand `x` is a `PyUnicodeObject` (string), the interpreter does not trigger standard numeric multiplication. Instead, it looks up the object's type descriptor (`PyUnicode_Type`) and routes the operation to its sequence repetition slot function, historically known as `sq_repeat`.
+
+**Memory Execution & Immutability:** Because strings are strictly **immutable**, CPython cannot alter the existing string buffer of `"5"`. The `sq_repeat` function calculates the exact required size of the final string ($1 \text{ byte} \times 2 = 2 \text{ bytes}$ plus the null terminator), requests a brand-new memory allocation on the heap, and sequentially copies the character data into the new buffer.
+
+**The Result:** A fresh string object containing the character array `"55"` is instantiated, pushed to the evaluation stack, and printed, while the original objects `x` and `y` remain entirely unchanged in memory.
+
+3. Identify valid variable names and explain why or why not:
+
+* `_user`
+* `2value`
+* `total_price`
+* `class`
+* `userName`
+
+**Answer & Breakdown:**
+
+* **`_user` (Valid):** CPython's lexical analyzer permits variable identifiers to begin with an underscore. Internally, a single leading underscore is structurally treated as a valid character but conventionally flags a variable as intended for internal or private scope within a module or class.
+* **`2value` (Invalid):** This triggers a `SyntaxError: invalid decimal literal` (or `invalid token`). The lexical analyzer requires all identifiers to match a strict grammar rule where the first character must be a non-digit (a letter or underscore). If it encounters a leading digit, it attempts to parse it as a numeric literal, causing a structural parsing failure when alphabetic characters immediately follow it.
+* **`total_price` (Valid):** This is completely valid and perfectly adheres to PEP 8's standard `snake_case` convention. It contains only permissible alphanumeric characters and underscores.
+* **`class` (Invalid):** This triggers a `SyntaxError: invalid syntax`. The string `class` is a hard-coded keyword reserved by Python's grammar rules to define object structures. Reserved keywords are registered directly in the compiler's token table and cannot be re-mapped as variable identifiers in any namespace dictionary.
+* **`userName` (Valid):** This is lexically valid and follows `camelCase` conventions. Because Python is strictly case-sensitive, it processes lowercase and uppercase characters as distinct byte streams, meaning `userName` is treated as a completely different identifier from `username`.
+
+**🧠 Under the Hood (Identifier Interning):**
+Whenever CPython parses a valid variable identifier (like `total_price` or `userName`), it doesn't just treat it as a random string. To maximize performance during namespace lookups, CPython automatically passes all valid identifier strings through an internal C function called `PyUnicode_InternInPlace()`.
+
+This process ensures that only a **single unique instance** of that identifier string exists in a global interned dictionary. When Python looks up a variable name later during execution within `locals()` or `globals()`, it doesn't waste clock cycles checking the string character-by-character; instead, it performs a lightning-fast C-level **pointer comparison** (`address_a == address_b`)!
+
+#### Level 3
+4. Convert the following into correct types and print their types: `"50"`, `20`, `3.5`, `0`
+
+```python
+# Performing explicit type casting on the values
+print(type(int("50")))   # Output: <class 'int'>
+print(type(str(20)))     # Output: <class 'str'>
+print(type(int(3.5)))    # Output: <class 'int'>
+print(type(bool(0)))     # Output: <class 'bool'>
+```
+**What's happening behind the scenes:**
+Explicit type casting instructs CPython to invoke the target type's constructor function (`_ _init_ _` or `_`_new_`_` slots at the underlying C layer) to translate data configurations across distinct memory representation systems:
+
+`int("50")`: CPython passes the string to an internal text-to-integer parsing loop. It reads the Unicode code points of the character array, confirms they are valid numeric base-10 digits, and allocates a new binary `PyLongObject` on the heap to store the integer value `50`.
+
+`str(20)`: CPython reads the raw binary value of the integer object and converts it into its equivalent human-readable ASCII/Unicode character representation, wrapping the byte stream in a brand new immutable `PyUnicodeObject`.
+
+`int(3.5)`: When casting a float to an integer, CPython does not perform mathematical rounding. Instead, it invokes truncation logic inside the float's native type slot, slicing away the decimal fractional part entirely from the `PyFloatObject` structure to yield a clean integer value of `3`.
+
+`bool(0)`: In CPython, integers, empty sequences, and `None` are structurally mapped to evaluate as falsy. To optimize performance and conserve system memory, CPython maintains two permanent, pre-allocated boolean objects globally. Passing `0` to the boolean constructor tells the interpreter to drop a fresh allocation completely and instantly point your execution reference link straight to the immutable global `PyBool_False` singleton address.
+
+#### Level 4 (Expert Level)
+1. Explain the difference between `==` and `is`:
+
+```python
+a = 1000
+b = 1000
+print(a == b)
+print(a is b)
+```
