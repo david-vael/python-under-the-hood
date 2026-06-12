@@ -12,5 +12,6 @@ print("Name:", name)
 > **Output:**
 > `x: 5`
 > `Name: John`​​
+
 Python is dynamically typed, meaning you don't need to specify the variable type, and
 variables can change type after they have been set.
