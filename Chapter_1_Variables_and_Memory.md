@@ -25,7 +25,6 @@ Python has specific rules and conventions for naming variables to ensure code cl
 and avoid errors.
 ###Required Rules
 **- Must start with a letter or underscore:** Variable names cannot begin with a number.
-> #Valid
 > [!NOTE]
 > **Valid**
 > ```python
