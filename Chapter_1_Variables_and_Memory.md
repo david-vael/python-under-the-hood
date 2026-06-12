@@ -27,13 +27,13 @@ and avoid errors.
 **- Must start with a letter or underscore: Variable names cannot begin with a number.**
 [!NOTE]
 > #Valid
->```text
+>```python
 > name = "Alice"
 > _count = 10
 > user_age = 25
 >```
 > #Invalid
->```text
+>```python
 >  1st_name = "Bob"    # SyntaxError
 >```
   
