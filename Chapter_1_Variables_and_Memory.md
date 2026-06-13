@@ -20,10 +20,10 @@ __Variables (Alternative Definition)__
 A variable is a named container used to store data values in a program. It allows the
 programmer to save information and reuse or modify it later during execution.
 
-###Rules for Naming Python Variables
+### Rules for Naming Python Variables
 Python has specific rules and conventions for naming variables to ensure code clarity
 and avoid errors.
-###Required Rules
+### Required Rules
 
 **- Must start with a letter or underscore:** Variable names cannot begin with a number.
 
@@ -65,7 +65,7 @@ and avoid errors.
 > 
 > print(age)  # Output: 20
 > print(Age)  # Output: 30
-> print(AGE)  # Output: 40
+> print(AGE)  # Output: 40 ```
 
 - **Cannot use Python keywords:** Reserved words like if , for , while , class , etc.
 cannot be used as variable names.
@@ -185,8 +185,8 @@ Variables can be reassigned to new values, even of different types, since Python
 > count = 20    # Reassign to a new integer
 > print(count)  # Output: 20
 > 
->count = "Twenty" # Reassign to a string
->print(count)     # Output: Twenty
+> count = "Twenty" # Reassign to a string
+> print(count)     # Output: Twenty
 > ```  
 
 ### Dynamic Typing
@@ -299,15 +299,15 @@ One of the most common mistakes in Python is trying to concatenate or perform op
    ```python
    x = 10
    x = "Ten"
-   print(type(x))
+   print(type(x))```
 
 2. Fix the error:
    ```python 
    price = "100"
-   total = price + 50
+   total = price + 50```
 
 3. Write code to swap two variables without using a third variable.
-4.Explain in one line: What is Dynamic Typing?
+4. Explain in one line: What is Dynamic Typing?
 
 **All questions in this document have been carefully designed to align with the concepts covered in your class. They progress from foundational understanding to advanced application, ensuring comprehensive practice at every level.**
    
@@ -317,13 +317,13 @@ One of the most common mistakes in Python is trying to concatenate or perform op
    ```python
    a = b = 5
    a = 10
-   print(b)
+   print(b)```
 
 2. What will be the output and why?
    ```python
    x = "5"
    y = 2
-   print(x * y)
+   print(x * y)```
 
 3. Identify valid variable names and explain why or why not:
    ```text
@@ -331,11 +331,11 @@ One of the most common mistakes in Python is trying to concatenate or perform op
    2value
    total_price
    class
-   userName
+   userName```
 
 4. Convert the following into correct types and print their types:
     ```python
-    "50", 20, 3.5, 0
+    "50", 20, 3.5, 0```
 
           
 #### Level 4
@@ -344,32 +344,32 @@ One of the most common mistakes in Python is trying to concatenate or perform op
    a = 1000
    b = 1000
    print(a == b)
-   print(a is b)
+   print(a is b)```
 
 2. Predict output and explain memory behavior:
    ```python
    a = [1, 2, 3]
    b = a
    a.append(4)
-   print(b)
+   print(b)```
 
 3. What will be the output?
    ```python
    x = True
    y = 10
-   print(x + y, type(x + y))
+   print(x + y, type(x + y))```
 
 4. Why does the data type change here?
    ```python
    x = 5
    x = x / 2
-   print(type(x))
+   print(type(x))```
 
 5. Identify the error and fix it:
    ```python
    age = "18"
    if age > 10:
-   print("Adult")           
+   print("Adult")```         
 
 ### Data Types in Python
 A data type defines the kind of value a variable can hold. Python automatically assigns a data type based on the value stored in the variable.
@@ -424,7 +424,7 @@ __None__ is a special constant in Python that represents "nothing" or "no value.
 x = 5
 print(type(x))  # <class 'int'>
 ```
-The **type()** function returns the data type of a variable. This is useful for debugging or when you need to verify what kind of data you're working with. In this example, **type(x)** returns **<class 'int'>** because **x** holds an integer value.
+The `type()` function returns the data type of a variable. This is useful for debugging or when you need to verify what kind of data you're working with. In this example, **type(x)** returns `<class 'int'>` because `x` holds an integer value.
 
 ### Key Takeaways
 
@@ -442,7 +442,7 @@ The **type()** function returns the data type of a variable. This is useful for 
 print(True + 5)    # 6
 print(False * 10)  # 0
 ```
-In Python, booleans are a subclass of integers. This means **True** equals **1** and **False** equals **0** when used in mathematical operations. This can be useful in certain calculations but should be used carefully to avoid confusion.
+In Python, booleans are a subclass of integers. This means `True` equals `1` and `False` equals `0` when used in mathematical operations. This can be useful in certain calculations but should be used carefully to avoid confusion.
 
 #### 2. Case Sensitivity Reminder
 Strings are case-sensitive (`"Hello"` ≠ `"hello"`).
@@ -452,7 +452,7 @@ word1 = "Hello"
 word2 = "hello"
 print(word1 == word2)  # False
 ```
-Python treats uppercase and lowercase letters as different characters. When comparing strings, **"Hello"** and **"hello"** are not equal. This is important to remember when working with user input, file names, or any text comparison.
+Python treats uppercase and lowercase letters as different characters. When comparing strings, `"Hello"` and `"hello"` are not equal. This is important to remember when working with user input, file names, or any text comparison.
 
 ### Input and Output
 
@@ -484,7 +484,7 @@ print("World")
 ```
 
 #### 4. Formatted Output (f-strings)
-F-strings (formatted string literals) provide a clean and readable way to embed expressions inside string literals. They start with an `f` or `F` before the opening quote, and expressions are placed inside curly braces `{}`. This is the recommended approach for string formatting in modern Python.
+F-strings (formatted string literals) provide a clean and readable way to embed expressions inside string literals. They start with an `f` or `F` before the opening quote, and expressions are **placed inside curly braces `{}`**. This is the recommended approach for string formatting in modern Python.
 
 ```python
 name = "Alex"
