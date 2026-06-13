@@ -1,3 +1,4 @@
+© 2026 David Vael | Licensed under CC-BY 4.0
 ## Variables
 __Variables__ are used to store data values in Python. Unlike other programming languages,
 Python has no command for declaring a variable - you simply assign a value to it using
