@@ -909,3 +909,62 @@ x = 5
 x = x / 2
 print(type(x))
 ```
+
+Answer: The data type changes from `<class 'int'>` to `<class 'float'>` because standard division (`/`) in Python is explicitly defined to perform true division, which always returns a floating-point number.
+
+**What's happening behind the scenes:**
+This question highlights the structural divergence between integer and floating-point representations inside the CPython virtual machine and how operator slots manage numeric precision.
+
+ **The Bytecode Divergence (`/` vs `//`):** When the CPython compiler parses your script, the specific arithmetic operator determines which bytecode instruction is emitted to the stack:
+
+      *  The floor division operator (`//`) emits the `BINARY_FLOOR_DIVIDE` bytecode.
+
+      * The true division operator (`/`) emits the `BINARY_TRUE_DIVIDE` bytecode.
+
+      When the virtual machine encounters `BINARY_TRUE_DIVIDE` with two integer operands, it bypasses integer math            systems entirely.
+
+**Slot Lookup & Implicit C Coercion:** At the C layer, CPython looks up the numeric type slots inside the left operand's `PyLong_Type` descriptor. It routes the operation to the true division slot function, known natively as `long_true_divide`. Inside `long_true_divide`, CPython extracts the raw numerical value from the `PyLongObject` structure of 5 and the `PyLongObject` structure of 2. It converts both values into native C `double` primitives on the execution stack and executes a standard hardware-level floating-point division:
+
+$$
+\text{result} = 5.0 / 2.0 = 2.5
+$$
+
+**Heap Reallocation and Label Binding:** Because a primitive C `double` cannot reside inside an integer type container wrapper, CPython allocates a brand-new `PyFloatObject` on the heap to house the decimal payload `2.5`. Finally, the assignment operator updates the pointer of the key `"x"` inside your local namespace dictionary (`locals()`). The label breaks its original reference link with the cached integer `5` and binds directly to the memory address of this new floating-point structure. Because Python is dynamically typed, the variable label accepts this pointer transition seamlessly at runtime.
+
+### 📋 Key Structural Breakdown
+
+| Operation Type | Bytecode Instruction | C-Level Function Executed | Resulting Heap Structure |
+| :--- | :--- | :--- | :--- |
+| `5 / 2` (True Div) | `BINARY_TRUE_DIVIDE` | `long_true_divide` | Allocates a new `PyFloatObject` (2.5) |
+| `5 // 2` (Floor Div) | `BINARY_FLOOR_DIVIDE` | `long_floor_divide` | Allocates a new `PyLongObject` (2) |
+
+5. Identify the error and fix it:
+
+```python
+age = "18"
+if age > 10:
+print("Adult")
+```
+Answer: This snippet contains two distinct structural errors that completely prevent execution:
+
+   1. `IndentationError`: The execution block directly following the conditional statement is not indented.
+
+   2. `TypeError`: An un-cast string (`"18"`) is being compared directly to a numeric integer (`10`).
+
+**The Fixed Code:**    
+```python
+age = "18"
+if int(age) > 10:
+    print("Adult")  # Explicit type casting and correct block indentation
+```
+**🧠 What's happening behind the scenes:**
+This scenario perfectly illustrates how CPython bifurcates its pipeline into a strict compile-time parsing phase and a dynamic runtime execution phase.
+
+**Phase 1: Lexical Parsing and the `IndentationError` (Compile-Time):** Before CPython looks at variable values or data types in memory, it feeds the raw source code through its tokenizer and structural parser. Python's grammar uniquely relies on indentation tokens (`INDENT` and `DEDENT`) to delimit logical code blocks. When the parser processes an `if` statement token, it alters its state to expect a mandatory `INDENT` token on the subsequent line. Because `print("Adult")` is flush with the left margin, the parser fails to construct the Abstract Syntax Tree (AST), instantly halts compilation, and throws an `IndentationError: expected an indented block` before a single line of code actually runs.
+
+**Phase 2: Runtime Evaluation and the `TypeError` Mechanics:** Once the indentation is syntactically corrected, the script successfully compiles to bytecode and proceeds to runtime execution. When the virtual machine reaches the conditional evaluation line, it processes the greater-than operator (`>`), triggering the `COMPARE_OP` bytecode instruction. CPython checks the type descriptor of the left operand (`age`). Because it points to a `PyUnicodeObject` (string), the interpreter evaluates the string's native C comparison slot function, `tp_richcompare`.
+
+**The Type Fallback Loop:** The string's `tp_richcompare` function is designed to evaluate text characters. When it detects that the right-hand operand is a `PyLongObject` (integer), Python's strict **strong typing** design philosophy prevents it from performing an implicit runtime conversion. The slot function breaks off execution and returns an internal sentinel pointer constant called `Py_NotImplemented`. Upon receiving `Py_NotImplemented`, the virtual machine attempts a reversed fallback check: it asks the right-hand integer object if it knows how to compare itself to a string. The integer's slot function also returns `Py_NotImplemented`. Having exhausted all type-safe operation avenues, CPython immediately raises a `TypeError: '>' not supported between instances of 'str' and 'int'`.
+
+**The Resolution (`int(age)`):** By wrapping the identifier inside the `int()` constructor, you explicitly command CPython to parse the Unicode array buffer of `"18"`, verify its digits, and instantiate a fresh `PyLongObject` housing the numeric value `18` on the heap. When `COMPARE_OP` executes now, both pointers point to integer type descriptors. The runtime routes the evaluation directly to `long_compare`, which successfully assesses the underlying numeric payload bits ($18 > 10$), pushes `PyBool_True` to the evaluation stack, and safely enters the indented execution block.
+
