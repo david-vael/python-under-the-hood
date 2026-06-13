@@ -914,9 +914,9 @@ This question highlights the structural divergence between integer and floating-
 
  **The Bytecode Divergence (`/` vs `//`):** When the CPython compiler parses your script, the specific arithmetic operator determines which bytecode instruction is emitted to the stack:
 
-The floor division operator (`//`) emits the `BINARY_FLOOR_DIVIDE` bytecode.
+1. The floor division operator (`//`) emits the `BINARY_FLOOR_DIVIDE` bytecode.
 
-The true division operator (`/`) emits the `BINARY_TRUE_DIVIDE` bytecode.
+2. The true division operator (`/`) emits the `BINARY_TRUE_DIVIDE` bytecode.
 
 When the virtual machine encounters `BINARY_TRUE_DIVIDE` with two integer operands, it bypasses integer math systems entirely.
 
