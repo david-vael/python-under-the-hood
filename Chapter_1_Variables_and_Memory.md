@@ -684,7 +684,6 @@ Python is a **strongly typed** language, meaning the interpreter strictly enforc
 
 **The Memory Fix** (`int(price)`): By calling the `int()` constructor, you tell CPython to spin up a new integer object in memory by parsing the character array inside the string. Once both objects share the same numeric type system, CPython can safely execute the underlying C-level addition and bind the result to `total`.
 
-#### Level 2
 3. Write code to swap two variables without using a third variable.
 
 ```python
@@ -705,7 +704,6 @@ In many traditional languages, swapping values requires a manual third variable 
 
 **Unpacking** (`a, b =`): Finally, the reordered values on the stack are popped off sequentially via `STORE_NAME` and bound to the identifiers on the left-hand side. The labels are updated seamlessly in a single atomic instruction cycle without any heap allocation overhead.
 
-#### Level 2
 4. Explain in one line: What is Dynamic Typing?
 
 **Answer:** Dynamic typing means variable data types are checked and associated at runtime (when the program executes) rather than at compile time, allowing a single variable label to reference completely different data types over time.
@@ -771,7 +769,6 @@ Whenever CPython parses a valid variable identifier (like `total_price` or `user
 
 This process ensures that only a **single unique instance** of that identifier string exists in a global interned dictionary. When Python looks up a variable name later during execution within `locals()` or `globals()`, it doesn't waste clock cycles checking the string character-by-character; instead, it performs a lightning-fast C-level **pointer comparison** (`address_a == address_b`)!
 
-#### Level 3
 4. Convert the following into correct types and print their types: `"50"`, `20`, `3.5`, `0`
 
 ```python
@@ -917,11 +914,11 @@ This question highlights the structural divergence between integer and floating-
 
  **The Bytecode Divergence (`/` vs `//`):** When the CPython compiler parses your script, the specific arithmetic operator determines which bytecode instruction is emitted to the stack:
 
-      *The floor division operator (`//`) emits the `BINARY_FLOOR_DIVIDE` bytecode.
+The floor division operator (`//`) emits the `BINARY_FLOOR_DIVIDE` bytecode.
 
-      *The true division operator (`/`) emits the `BINARY_TRUE_DIVIDE` bytecode.
+The true division operator (`/`) emits the `BINARY_TRUE_DIVIDE` bytecode.
 
-      When the virtual machine encounters `BINARY_TRUE_DIVIDE` with two integer operands, it bypasses integer math            systems entirely.
+When the virtual machine encounters `BINARY_TRUE_DIVIDE` with two integer operands, it bypasses integer math systems entirely.
 
 **Slot Lookup & Implicit C Coercion:** At the C layer, CPython looks up the numeric type slots inside the left operand's `PyLong_Type` descriptor. It routes the operation to the true division slot function, known natively as `long_true_divide`. Inside `long_true_divide`, CPython extracts the raw numerical value from the `PyLongObject` structure of 5 and the `PyLongObject` structure of 2. It converts both values into native C `double` primitives on the execution stack and executes a standard hardware-level floating-point division:
 
