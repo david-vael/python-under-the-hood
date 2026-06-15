@@ -43,13 +43,6 @@ This project aims to:
 * Gradually introduce CPython internals and implementation details.
 * Remain accessible to beginners while providing deeper insights for curious learners.
 
-## Code of Conduct
-
-Please be respectful to all contributors.
-
-Constructive feedback is encouraged.
-Personal attacks, harassment, or disrespectful behavior will not be tolerated.
-
 ## Questions?
 
 Feel free to open an issue or start a discussion if you have questions, ideas, or suggestions.
