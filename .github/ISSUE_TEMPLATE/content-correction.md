@@ -1,10 +1,8 @@
 ---
 name: Content Correction
-about: Describe this issue template's purpose here.
-title: ''
-labels: ''
-assignees: ''
-
+about: Report incorrect information, broken examples, or technical mistakes.
+title: "[Correction] "
+labels: correction
 ---
 
 ---
