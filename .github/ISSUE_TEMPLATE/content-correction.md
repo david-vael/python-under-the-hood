@@ -5,12 +5,7 @@ title: "[Correction] "
 labels: correction
 ---
 
----
 
-name: Content Correction
-about: Report incorrect information, broken examples, or technical mistakes.
-title: "[Correction] "
-labels: correction
 ------------------
 
 ## Chapter
