@@ -14,7 +14,17 @@ Whether you are looking to optimize your code, prepare for advanced technical in
 I am a **contributing member of the Python Software Foundation (PSF)**. This repository and my upcoming full-length guide are born out of a passion for the Python ecosystem and a desire to make the complex internal architecture of CPython accessible to every developer.
 
 ---
+Project Status
 
+Current Progress:
+✅ Chapter 1 – Variables & Memory
+
+Currently Working On:
+🔄 Next chapter in development
+
+This handbook is developed iteratively. Topics and chapter order may evolve as the project grows and community feedback is incorporated.
+
+---
 ## 🤝 Contributing
 
 As a community-driven initiative, contributions are incredibly welcome! Whether you spot a typo, want to suggest a clearer diagram, or wish to co-author an upcoming chapter:
