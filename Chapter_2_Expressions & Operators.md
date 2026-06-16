@@ -162,3 +162,47 @@ Arithmetic operators are used to perform mathematical calculations on numeric va
 | `//` | Floor Division | 10 // 3 | 3 | Floors the quotient down toward negative infinity. |
 | `%` | Modulus | 10 % 3 | 1 | Returns the remainder left over after floor division. |
 | `**` | Exponentiation | 10 ** 3 | 1000 | Raises the left operand to the power of the right operand. |
+
+## Code Implementation
+
+```python
+a = 10
+b = 3
+
+print(a + b)   # Output: 13
+print(a - b)   # Output: 7
+print(a * b)   # Output: 30
+print(a / b)   # Output: 3.3333333333333335 (True Division)
+print(a % b)   # Output: 1                  (Remainder)
+print(a // b)  # Output: 3                  (Floored to whole integer)
+print(a ** b)  # Output: 1000               (10 cubed)
+```
+
+### 📋 Key Operational Notes
+
+- **True Division (`/`) Consistency**: Division always outputs a floating-point number. Even an even split like `10 / 5` yields `2.0`, never an ordinary integer `2`.
+
+- **Floor Division (`//`) Math**: It truncates the fractional remainder and rounds down to the nearest whole integer toward the lower floor.
+
+- **Modulus (`%`) Utility**: Returns the literal remainder left over after floor division. It is heavily utilized to detect even/odd numbers (`x % 2 == 0`).
+
+- **Operator Precedence (`PEMDAS`)**: Python strictly follows standard mathematical hierarchies. Exponentiation (` `) executes first, followed by the multiplicative group (`*`, `/`, `//`, `%`), while additive operators (`+`, `-`) execute last. Parentheses `()` can be introduced to explicitly override execution order.
+
+## 🧠 What's happening behind the scenes:
+While standard arithmetic looks basic on the surface, CPython utilizes distinct structural logic to handle signs, precision limits, and hardware architecture constraints.
+
+- **The Truncation Trap (Negative Floor Division)**: A common point of confusion is how floor division (`//`) and modulus (`%`) handle negative inputs. CPython uses Floor Truncation (rounding down toward negative infinity), whereas languages like C++ or Java use Truncation Toward Zero.
+
+    - In Python, `-10 // 3` does not give `-3`.
+    - Instead, the true division result is `-3.333....` Rounding down toward negative infinity pushes the value to `-4`.
+
+     This dictates how the modulus operator calculates values, since the two operations are linked at the engine layer by the low-level identity formula:
+     $$a \% b = a - (b \times (a // b))$$
+     Therefore, `-10 % 3` expands out to $-10 - (3 \times -4)$, which evaluates directly to `2`.
+
+- **Arbitrary Precision vs. Hardware Floats**: When performing math on integers versus floats, the underlying memory objects behave completely differently inside RAM:
+
+      - `PyLongObject` **(Integers)**: Feature **arbitrary precision**. CPython stores integers as a dynamic array of digitized bits in memory rather than a fixed-width CPU word. This means your integers can grow as large as your computer's RAM allows without ever experiencing an integer overflow.
+      - `PyFloatObject` **(Floats)**: Are **strictly bounded**. They map directly to your physical CPU's native 64-bit IEEE 754 double-precision standard. Because of this hardware-level limitation, expressions like `10 / 3` cannot store infinitely repeating decimals, causing small, inevitable floating-point precision drop-offs at the 16th decimal place.
+  
+
