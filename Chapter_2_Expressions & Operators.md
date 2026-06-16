@@ -25,7 +25,7 @@ len("hello")   # Evaluates to 5
 **Flexible execution**: You can plug expressions into any slot where Python expects a value, including variable assignments, function arguments, or conditional statements.
 
 ## Types of Expressions
-**Arithmetic Expressions**
+**1.Arithmetic Expressions**
 Arithmetic expressions use mathematical operators to perform calculations on numeric data types (`int` and `float`).
 
 ```python
@@ -49,4 +49,36 @@ When CPython evaluates arithmetic expressions, it manages memory allocation, ope
 
      - If the result falls outside this range (e.g., `4 * 6 = 24` hits the cache, whereas `300 + 200 = 500` misses it), CPython dynamically allocates a completely new block of heap memory to instantiate a new `PyLongObject`.
 
-- **Truncation Mechanics in Floor Division (`//`)**: Unlike true division (`/`), which invokes `long_true_divide` and automatically promotes the output to a `PyFloatObject`, floor division (`//`) invokes `long_floor_divide`. At the C layer, this performs truncating division that floors the mathematical quotient toward negative infinity. If both operands are integers, the returned chunk remains a pure `PyLongObject`, avoiding floating-point execution and precision overhead entirely. 
+- **Truncation Mechanics in Floor Division (`//`)**: Unlike true division (`/`), which invokes `long_true_divide` and automatically promotes the output to a `PyFloatObject`, floor division (`//`) invokes `long_floor_divide`. At the C layer, this performs truncating division that floors the mathematical quotient toward negative infinity. If both operands are integers, the returned chunk remains a pure `PyLongObject`, avoiding floating-point execution and precision overhead entirely.
+
+**2. Logical and Relational Expressions**
+These expressions use relational (comparison) and logical operators to evaluate conditions, ultimately producing a truth value or returning one of the evaluated operands.
+
+```python
+a > b    # Greater than: Checks if a is strictly larger than b
+x == 5   # Equal to: Checks for structural equality of values
+not y    # Logical NOT: Reverses the truth value of y
+a and b  # Logical AND: Returns the first falsy value, or the last value if all are truthy
+x or y   # Logical OR: Returns the first truthy value, or the last value if all are falsy
+```
+
+### 🧠 What's happening behind the scenes:
+When CPython processes logical and comparison expressions, it avoids unnecessary computation by relying on short-circuit bytecode routing and a strict, tiered C-level truth-testing protocol.
+
+- **Short-Circuit Evaluation (`JUMP` Bytecode)**: Unlike many compiled languages where logical operators strictly return a boolean primitive, Python’s `and` and `or` operators are dynamic control-flow expressions. They do not coerce their results to `True` or `False`. Instead, they short-circuit execution directly at the bytecode layer using conditional jump instructions (`POP_JUMP_IF_FALSE` and `POP_JUMP_IF_TRUE`).
+
+    - For `a and b`: CPython evaluates `a`. If `a` is falsy, the virtual machine skips evaluating `b` entirely, clears the remaining evaluation stack path, and returns the actual unmutated object reference of `a`.
+
+   - For `x or y`: CPython evaluates `x`. If `x` is truthy, it short-circuits instantly, drops the execution path for `y`, and outputs the raw object reference of `x`.
+    Example: `0 and "hello"` evaluates instantly to the integer `0` (the first falsy object), while `5 or "hello"` resolves directly to the integer `5` (the first truthy object).
+
+- **The Internal Truth-Testing Protocol (`nb_bool` and `mp_length`)**: To determine whether a non-boolean object (such as an integer, string, or collection) is structurally "truthy" or "falsy", the virtual machine invokes the internal C function `PyObject_IsTrue()`. This function executes a highly optimized, tiered lookup on the target object's type descriptor slots:
+
+   1. **The Number Slot**: It looks for the `nb_bool` slot (the C-level engine mapping for `_ _bool_ _()`). If populated (as it is for integers and floats), it executes it to retrieve a direct C-level integer `1` or `0`.
+
+   2. **The Mapping Slot**: If `nb_bool` is empty, it looks for the `mp_length` mapping slot (the C-level equivalent of `_ _len_ _()`). If a container like a list, dictionary, or string returns a size of `0`, it is flagged as falsy; otherwise, it resolves to truthy.
+
+   3. **The Default Fallback**: If neither slot is defined by the type descriptor, the object automatically defaults to truthy.
+
+- **Chained Comparison Stack Optimizations**: When parsing a chained comparison like `3 < x < 5`, Python handles it uniquely. Instead of evaluating `3 < x` into a temporary boolean and erroneously comparing `True < 5`, the compiler desugars the expression into an implicit logical conjunction equivalent to `(3 < x) and (x < 5)`. Crucially, to prevent expensive redundant evaluations or unintended side-effects (such as if `x` were a heavy function call like `get_current_user()`), CPython utilizes its internal evaluation stack to store and duplicate the intermediate pointer, ensuring `x` is evaluated **exactly once**.
+  
