@@ -153,11 +153,12 @@ STORE_NAME               (x)      # Pops the 8 off the stack and binds it to the
 ### Arithmetic Operators in Python
 Arithmetic operators are used to perform mathematical calculations on numeric values. They allow you to execute everything from basic addition to specialized operations like remainder tracking and exponentiation.
 
-Operator,Meaning,Example,Result,CPython Data Type Behavior
-+,Addition,10 + 3,13,Keeps int if both are integers; promotes to float if mixed.
--,Subtraction,10 - 3,7,Keeps int if both are integers; promotes to float if mixed.
-*,Multiplication,10 * 3,30,Keeps int if both are integers; promotes to float if mixed.
-/,Division,10 / 3,3.3333...,Always returns a <class 'float'> via True Division.
-//,Floor Division,10 // 3,3,Floors the quotient down toward negative infinity.
-%,Modulus,10 % 3,1,Returns the remainder left over after floor division.
-**,Exponentiation,10 ** 3,1000,Raises the left operand to the power of the right operand.
+| Operator | Meaning | Example | Result | CPython Data Type Behavior |
+| :--- | :--- | :--- | :--- | :--- |
+| `+` | Addition | 10 + 3 | 13 | Keeps int if both are integers; promotes to float if mixed. |
+| `-` | Subtraction | 10 - 3 | 7 | Keeps int if both are integers; promotes to float if mixed. |
+| `*` | Multiplication | 10 * 3 | 30 | Keeps int if both are integers; promotes to float if mixed. |
+| `/` | Division | 10 / 3 | 3.3333... | Always returns a `<class 'float'>` via True Division. |
+| `//` | Floor Division | 10 // 3 | 3 | Floors the quotient down toward negative infinity. |
+| `%` | Modulus | 10 % 3 | 1 | Returns the remainder left over after floor division. |
+| `**` | Exponentiation | 10 ** 3 | 1000 | Raises the left operand to the power of the right operand. |
