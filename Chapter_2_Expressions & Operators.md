@@ -202,7 +202,32 @@ While standard arithmetic looks basic on the surface, CPython utilizes distinct 
 
 - **Arbitrary Precision vs. Hardware Floats**: When performing math on integers versus floats, the underlying memory objects behave completely differently inside RAM:
 
-      - `PyLongObject` **(Integers)**: Feature **arbitrary precision**. CPython stores integers as a dynamic array of digitized bits in memory rather than a fixed-width CPU word. This means your integers can grow as large as your computer's RAM allows without ever experiencing an integer overflow.
-      - `PyFloatObject` **(Floats)**: Are **strictly bounded**. They map directly to your physical CPU's native 64-bit IEEE 754 double-precision standard. Because of this hardware-level limitation, expressions like `10 / 3` cannot store infinitely repeating decimals, causing small, inevitable floating-point precision drop-offs at the 16th decimal place.
+  - **`PyLongObject` (Integers)**: Feature arbitrary precision. CPython stores integers as a dynamic array of digitized bits in memory rather than a fixed-width CPU word. This means your integers can grow as large as your computer's RAM allows without ever experiencing an integer overflow.
+  - **`PyFloatObject` (Floats)**: Are strictly bounded. They map directly to your physical CPU's native 64-bit IEEE 754 double-precision standard. Because of this hardware-level limitation, expressions `like 10 / 3` cannot store infinitely repeating decimals, causing small, inevitable floating-point precision drop-offs at the 16th decimal place.
   
+### Comparison Operators in Python
+Comparison operators are used to evaluate the relationship between two values. They analyze how the operands relate to each other and always return a Boolean result: either `True` or `False`. These operators form the core foundation of conditional logic and decision-making blocks.
+
+| Operator | Meaning | Example | Result | Key Engine Characteristic |
+| :---: | :--- | :--- | :--- | :--- |
+| `==` | Equal to | 5 == 5 | TRUE | Checks structural equality of values, not raw memory addresses. |
+| `!=` | Not equal to | 5 != 3 | TRUE | Evaluates to True if the contents or data values differ. |
+| `>` | Greater than | 5 > 3 | TRUE | Evaluates if the left value is strictly larger than the right. |
+| `<` | Less than | 5 < 3 | FALSE | Evaluates if the left value is strictly smaller than the right. |
+| `>=` | Greater than or equal to | 5 >= 5 | TRUE | Resolves to True if the left value is larger or matches the right. |
+| `<=` | Less than or equal to | 5 <= 3 | FALSE | Resolves to True if the left value is smaller or matches the right. |
+
+### Code Implementation
+```python
+a = 10
+b = 5
+
+print(a == b)  # Output: False
+print(a != b)  # Output: True
+print(a > b)   # Output: True
+print(a < b)   # Output: False
+print(a >= b)  # Output: True
+print(a <= b)  # Output: False
+```
+
 
