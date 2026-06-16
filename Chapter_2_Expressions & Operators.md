@@ -102,4 +102,62 @@ Strings in Python are immutable arrays of Unicode code points internally represe
 
 - **The High-Speed Architecture of f-Strings (`f"..."`)**: Legacy string formatting using `%` or `.format()` requires heavy runtime parsing loops to decode formatting placeholders. Modern f-strings bypass this performance penalty entirely by being optimized directly during the compilation phase. When the compiler intercepts an f-string literal, it emits specialized, hardware-friendly `FORMAT_VALUE` and `BUILD_STRING` bytecode instructions. Instead of parsing string tokens at runtime, the virtual machine handles the expression as a lightning-fast, highly localized concatenation routine—coercing the variable `x` to a string pointer on the fly and writing it straight into a pre-calculated target memory layout without any heavy method lookup overhead.
 
-  
+### Expressions vs. Statements
+It is crucial to understand the structural and architectural differences between these two core building blocks in Python:
+
+- **Expressions**: Evaluate down to a specific data object pointer and can be nested as part of a larger operation.
+
+- **Statements**: Perform a global action or command the interpreter to execute a structural, state-altering task. They do not naturally evaluate to a value.
+
+```python
+# Expression (returns a value object pointer)
+5 + 3
+
+# Statement (performs a structural state action)
+x = 5 + 3
+# The right-hand side (5 + 3) is an expression evaluating to the integer 8.
+# The entire line is an Assignment Statement that binds a namespace label to that value object.
+```
+
+### 📋 Where Expressions Are Used
+Because expressions always resolve down to a concrete data object on the heap, you can seamlessly plug them into any syntax slot where Python expects a value:
+
+- **Variable assignments**: `result = 10 + 5`
+- **Function arguments**: `print(3 * 4)`
+- **Conditional blocks**: `if x > 10:`
+- **Return values**: `return a + b`
+- **Collection comprehensions**: `[x * 2 for x in range(5)]`
+
+### 🧠 What's happening behind the scenes:
+The divergence between expressions and statements is deeply baked into how CPython's parser constructs the Abstract Syntax Tree (AST) and how the Virtual Machine utilizes its internal execution stack.
+
+- **The Stack Behavior (`PUSH` vs. `POP`)**: The CPython Virtual Machine operates on a stack-based architecture.
+
+    - When an **expression** runs, it is architecturally required to leave a resulting object pointer on top of the evaluation stack. For instance, executing `5 + 3` pushes a pointer to the cached integer `8` onto the stack frame.
+    - A **statement**, conversely, manages structural system flow. If you execute a pure expression as a standalone line of code inside a script (like typing `5 + 3` on its own line), CPython's compiler categorizes the line as an `Expr` statement node. To maintain a clean virtual machine frame, it immediately appends a `POP_TOP` bytecode instruction to discard that computed value from the stack so it doesn't pollute memory or corrupt subsequent stack offsets.
+
+- **Bytecode Generation Divergence**: Consider the compilation layout differences between a standalone expression and a stateful assignment statement:
+
+```
+# Standalone Expression: 5 + 3
+LOAD_CONST               (8)      # Pushes the integer 8 pointer onto the stack
+POP_TOP                           # Cleans the stack frame immediately (Value is discarded)
+
+# Assignment Statement: x = 5 + 3
+LOAD_CONST               (8)      # Pushes the integer 8 pointer onto the stack
+STORE_NAME               (x)      # Pops the 8 off the stack and binds it to the key "x" in locals()
+```
+
+- **The Nesting Constraint**: Notice that the assignment statement `x = 5 + 3` alters the global or local namespace dictionary (`locals()`). It maps the string identifier key `"x"` to the specific heap memory address of the integer `8`. Because statements represent execution commands rather than operand values, they leave nothing behind on the evaluation stack. This is why attempting to nest a statement inside an expression—such as writing `print(x = 5)` instantly triggers a compile-time `SyntaxError: invalid syntax`. The statement has no object pointer to hand over to the function's argument slot!
+
+### Arithmetic Operators in Python
+Arithmetic operators are used to perform mathematical calculations on numeric values. They allow you to execute everything from basic addition to specialized operations like remainder tracking and exponentiation.
+
+Operator,Meaning,Example,Result,CPython Data Type Behavior
++,Addition,10 + 3,13,Keeps int if both are integers; promotes to float if mixed.
+-,Subtraction,10 - 3,7,Keeps int if both are integers; promotes to float if mixed.
+*,Multiplication,10 * 3,30,Keeps int if both are integers; promotes to float if mixed.
+/,Division,10 / 3,3.3333...,Always returns a <class 'float'> via True Division.
+//,Floor Division,10 // 3,3,Floors the quotient down toward negative infinity.
+%,Modulus,10 % 3,1,Returns the remainder left over after floor division.
+**,Exponentiation,10 ** 3,1000,Raises the left operand to the power of the right operand.
