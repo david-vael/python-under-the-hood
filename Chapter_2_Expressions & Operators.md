@@ -45,8 +45,8 @@ When CPython evaluates arithmetic expressions, it manages memory allocation, ope
 
 - **Fixed Allocation vs. Integer Caching**: Because numeric types in Python are strictly **immutable** objects, any arithmetic operation must conceptually generate a brand-new numeric object on the heap to store the resulting payload. However, to eliminate massive performance overhead, CPython optimizes memory usage:
 
- -If your expression evaluates to a small integer between `-5` and `256`, CPython bypasses raw heap allocation entirely and instantly returns a pointer to a pre-allocated integer from its global **Small Integer Cache**.
+ - If your expression evaluates to a small integer between `-5` and `256`, CPython bypasses raw heap allocation entirely and instantly returns a pointer to a pre-allocated integer from its global **Small Integer Cache**.
 
- -If the result falls outside this range (e.g., `4 * 6 = 24` hits the cache, whereas `300 + 200 = 500` misses it), CPython dynamically allocates a completely new block of heap memory to instantiate a new `PyLongObject`.
+ - If the result falls outside this range (e.g., `4 * 6 = 24` hits the cache, whereas `300 + 200 = 500` misses it), CPython dynamically allocates a completely new block of heap memory to instantiate a new `PyLongObject`.
 
--**Truncation Mechanics in Floor Division (`//`)**: Unlike true division (`/`), which invokes `long_true_divide` and automatically promotes the output to a `PyFloatObject`, floor division (`//`) invokes `long_floor_divide`. At the C layer, this performs truncating division that floors the mathematical quotient toward negative infinity. If both operands are integers, the returned chunk remains a pure `PyLongObject`, avoiding floating-point execution and precision overhead entirely. 
+- **Truncation Mechanics in Floor Division (`//`)**: Unlike true division (`/`), which invokes `long_true_divide` and automatically promotes the output to a `PyFloatObject`, floor division (`//`) invokes `long_floor_divide`. At the C layer, this performs truncating division that floors the mathematical quotient toward negative infinity. If both operands are integers, the returned chunk remains a pure `PyLongObject`, avoiding floating-point execution and precision overhead entirely. 
