@@ -82,3 +82,24 @@ When CPython processes logical and comparison expressions, it avoids unnecessary
 
 - **Chained Comparison Stack Optimizations**: When parsing a chained comparison like `3 < x < 5`, Python handles it uniquely. Instead of evaluating `3 < x` into a temporary boolean and erroneously comparing `True < 5`, the compiler desugars the expression into an implicit logical conjunction equivalent to `(3 < x) and (x < 5)`. Crucially, to prevent expensive redundant evaluations or unintended side-effects (such as if `x` were a heavy function call like `get_current_user()`), CPython utilizes its internal evaluation stack to store and duplicate the intermediate pointer, ensuring `x` is evaluated **exactly once**.
   
+**3. String Expressions**
+String expressions evaluate and manipulate text sequences to produce new, immutable string objects (`str`).
+
+```python
+"Hello" + " World"  # Concatenation: Joins two strings into "Hello World"
+"Python " * 3       # Repetition: Repeats the string to create "Python Python Python "
+f"Value: {x}"       # f-string formatting: Interpolates the value of x directly into the text
+```
+
+### 🧠 What's happening behind the scenes:
+Strings in Python are immutable arrays of Unicode code points internally represented by the `PyUnicodeObject` structure. Because they are strictly immutable, any expression that manipulates a string must allocate a completely fresh object layout on the heap.
+
+- **Concatenation Overhead (`+`)**: When CPython evaluates `"Hello" + " World"`, it runs the internal C-level function `unicode_concat`. The engine measures the exact character length of both operands, requests a single contiguous block of heap memory sized perfectly for the combined payload, and sequentially copies the character arrays over.
+
+    - Optimization Note: While looping sequential additions (e.g., inside a `for` loop) causes massive memory churn due to repeated allocations, chaining string concatenations in a single evaluation statement (such as `s = s1 + s2 + s3`) allows CPython's compiler to optimize the sequence by pre-calculating the final buffer size upfront, minimizing intermediate memory allocations.
+
+- **Repetition Mechanics (`*`)**: When evaluating `"Python " * 3`, CPython dispatches the execution to the string type descriptor's sequence repetition slot function, historically known as `unicode_repeat`. Rather than running a series of additions, it calculates the definitive target size all at once ($7 \text{ characters} \times 3 = 21 \text{ bytes}$ plus the trailing null terminator byte). It then drops into low-level, hardware-optimized C `memcpy` loops to rapidly stamp the repeating character bit patterns directly into the fresh heap allocation slot.
+
+- **The High-Speed Architecture of f-Strings (`f"..."`)**: Legacy string formatting using `%` or `.format()` requires heavy runtime parsing loops to decode formatting placeholders. Modern f-strings bypass this performance penalty entirely by being optimized directly during the compilation phase. When the compiler intercepts an f-string literal, it emits specialized, hardware-friendly `FORMAT_VALUE` and `BUILD_STRING` bytecode instructions. Instead of parsing string tokens at runtime, the virtual machine handles the expression as a lightning-fast, highly localized concatenation routine—coercing the variable `x` to a string pointer on the fly and writing it straight into a pre-calculated target memory layout without any heavy method lookup overhead.
+
+  
