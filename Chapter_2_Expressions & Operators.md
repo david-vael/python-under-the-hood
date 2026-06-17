@@ -255,3 +255,62 @@ When CPython executes comparison bytecode routines, it steps away from high leve
   print(0.1 + 0.2)  # Output: 0.30000000000000004
   ```
   Since `0.30000000000000004` is structurally unequal to a clean, exact `0.3`, the `==` operator evaluates the data bits and returns `False`. To safely compare float evaluations under the hood, software developers utilize tolerance offsets, such as the built-in standard library function `math.isclose()`.
+
+### Logical Operators in Python
+
+Logical operators are used to combine, evaluate, or modify Boolean expressions. They allow you to construct complex execution workflows by connecting multiple distinct comparison conditions together into a single evaluated result.
+
+| Operator | Meaning | Example | Result | Core Engine Rule |
+| :--- | :--- | :--- | :--- | :--- |
+| `and` | Logical AND | True and False | FALSE | Evaluates to True only if all connected conditions are true. |
+| `or` | Logical OR | True or False | TRUE | Evaluates to True if at least one connected condition is true. |
+| `not` | Logical NOT | not True | FALSE | A unary operator that completely reverses the target boolean value. |
+
+### Code Implementation
+
+```python
+a = 10
+b = 5
+
+# Both conditions must be true
+print(a > 5 and b < 10)  # Output: True
+
+# At least one condition must be true
+print(a < 5 or b < 10)   # Output: True
+
+# Reverses the boolean output
+print(not (a > b))       # Output: False
+```
+
+### Key Operational Notes
+- **Conditional Control Flow**: Logical operators serve as the structural backbone for building dynamic conditional routing blocks inside `if`, `elif`, `while`, and complex collection comprehension filters.
+- **Operator Precedence Hierarchy**: Logical symbols do not execute strictly left-to-right. Python evaluates `not` first, followed by `and`, and evaluates `or` last. You should introduce parentheses `()` to explicitly define or override this structural evaluation hierarchy.
+- **Short-Circuit Evaluation**: Python utilizes lazy evaluation logic. If the final truth value of an entire chained expression can be conclusively determined by the very first condition, the interpreter completely skips evaluating the remaining conditions.
+
+### 🧠 What's happening behind the scenes:
+At the CPython virtual machine layer, logical operations are optimized to minimize evaluation overhead by manipulating the execution frame's evaluation stack directly without forcing premature or strict boolean object conversions.
+
+- **Short-Circuiting via Jump Bytecodes**: The `and` and `or` operators are implemented directly using specialized conditional bytecode jump instructions rather than traditional math or functional calls.
+       - When the compiler processes an `and` expression, it outputs a `POP_JUMP_IF_FALSE` instruction. If the left operand evaluates to a falsy state, CPython leaves that operand directly on top of the stack, short-circuits execution by skipping the right-side expression entirely, and exits the block.
+       - When processing an `or` expression, the compiler outputs a `POP_JUMP_IF_TRUE` instruction. If the left-hand operand is truthy, it skips the rest of the evaluation line immediately.
+       This architectural optimization allows you to safely write defensive code expressions where the second check would normally crash the application if run standalone:
+```python
+  # This will NOT raise a ZeroDivisionError because short-circuiting 
+# halts execution at the first check before the division is ever parsed.
+if x != 0 and (10 / x) > 2:
+    print("Safe execution")
+```
+
+- **The Return Value Myth**: A massive point of confusion for intermediate programmers is the assumption that logical operators always return a strict `True` or `False` boolean primitive. In reality, `and` and `or` return the **actual unmutated object reference they last evaluated**.
+- **`or` mechanics**: Returns the first truthy object it encounters. If all objects in the chain are falsy, it outputs the final evaluated object.
+
+```python
+print("Hello" or "World")  # Output: "Hello" (First truthy object)
+print([] and "Python")     # Output: []       (First falsy object)
+```
+
+- **How CPython Audits "Truthiness" (`PyObject_IsTrue`)**: When checking non-boolean objects (such as strings, lists, or custom classes) in a logical context, CPython passes the target object's memory pointer to the internal C API function `PyObject_IsTrue()`. Instead of executing an expensive type coercion, it inspects the object’s underlying C type structure slots in an optimized order:
+   1. **`nb_bool` Slot**: It looks for a numeric evaluation slot called `nb_bool`. If populated, it runs the type's native boolean mapping method (returning a direct C integer `1` or `0`).
+   2. **`mp_length` Slot**: If `nb_bool` is empty, it looks for a mapping/sequence capacity slot called `mp_length` (the engine's internal `len()` handler). If an object like a list `[]` or string `""` evaluates to a size of `0`, it is flagged as falsy; otherwise, it is truthy.
+   3. **Default Fallback**: If neither structural slot exists in the type definition layout, the object automatically defaults to truthy.
+
