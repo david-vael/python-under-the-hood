@@ -232,4 +232,26 @@ print(a >= b)  # Output: True
 print(a <= b)  # Output: False
 ```
 
+### 📋 Key Operational Notes
+- **Strictly Boolean Outputs**: Every comparison safely resolves into a direct pointer reference to either the `True` or `False` global singleton objects managed by the CPython runtime.
+- **String Case-Sensitivity**: Text comparisons are entirely case-sensitive (`"Hello" == "hello"` evaluates to `False`). Python compares strings **lexicographically** (alphabetically) by evaluating the underlying numeric Unicode code point of each character sequence.
+- **Chained Comparisons**: You can natively combine comparisons into sequential checks like `1 < x < 10`. Python processes this cleanly as `(1 < x) and (x < 10)`, utilizing an optimized stack duplicate step so that the middle variable `x` is evaluated exactly once.
+- **Value vs. Identity (`==` vs. `is`)**: The `==` operator verifies if two separate objects hold identical contents (structural equality). If you want to check if two variables point to the exact same memory address allocation in RAM, use the `is` operator (object identity).
 
+### 🧠 What's happening behind the scenes:
+When CPython executes comparison bytecode routines, it steps away from high level abstract logic and interacts directly with character maps, evaluation slots, and physical CPU floating point constraints.  
+
+- **Lexicographical String Evaluation (`ord()`)**: When comparing strings (e.g., `"Apple" < "banana"`), CPython does not evaluate string length or visual layout. At the C layer, it maps directly to a loop comparing sequential ordinal numbers step-by-step.
+    - The uppercase letter `"A"` maps to Unicode value `65`.
+    - The lowercase letter `"b"` maps to Unicode value `98`.
+     Because $65 < 98$, the expression `"Apple" < "banana"` instantly breaks execution and returns `True`. You can inspect these underlying digits yourself using Python's native `ord()` function (e.g., `ord('A')`).
+
+- **The Floating-Point Dilemma (`0.1 + 0.2 == 0.3`)**: A notorious point of confusion in computing is why executing `0.1 + 0.2 == 0.3` in Python evaluates to `False`. This is not a bug in Python; it is an unyielding hardware level constraint.
+       - Python’s `PyFloatObject` stores floating point numbers using the physical hardware CPU's native **IEEE 754 double-precision standard** (a 64-bit binary layout).
+       - Base-10 fractional decimals like `0.1` and `0.2` cannot be cleanly represented as terminating fractions in base-2 binary math (exactly like how the fraction $1/3$ becomes an infinitely repeating $0.3333...$ in base-10 layout).
+       - When the CPU performs the addition in binary, it encounters a microscopic rounding surplus:
+
+  ```python
+  print(0.1 + 0.2)  # Output: 0.30000000000000004
+  ```
+  Since `0.30000000000000004` is structurally unequal to a clean, exact `0.3`, the `==` operator evaluates the data bits and returns `False`. To safely compare float evaluations under the hood, software developers utilize tolerance offsets, such as the built-in standard library function `math.isclose()`.
