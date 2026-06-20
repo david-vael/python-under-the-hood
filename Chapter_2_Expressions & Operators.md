@@ -314,3 +314,35 @@ print([] and "Python")     # Output: []       (First falsy object)
    2. **`mp_length` Slot**: If `nb_bool` is empty, it looks for a mapping/sequence capacity slot called `mp_length` (the engine's internal `len()` handler). If an object like a list `[]` or string `""` evaluates to a size of `0`, it is flagged as falsy; otherwise, it is truthy.
    3. **Default Fallback**: If neither structural slot exists in the type definition layout, the object automatically defaults to truthy.
 
+### Assignment Operators in Python
+
+Assignment operators are used to bind values to variables or update existing variable configurations using shorthand notations. Instead of writing verbose expressions like `x = x + 5`, Python provides compound assignment operators such as `x += 5` to make code cleaner, more concise, and structurally efficient.
+
+## 📋 Assignment Operators Overview
+| Operator | Meaning | Example | Equivalent To | Primary Data Behavior |
+| :--- | :--- | :--- | :--- | :--- |
+| `=` | Assign | x = 5 | x = 5 | Binds a namespace label pointer to a target object in memory. |
+| `+=` | Add and assign | x += 3 | x = x + 3 | Performs addition, then updates the target variable pointer. |
+| `-=` | Subtract and assign | x -= 2 | x = x - 2 | Performs subtraction, then updates the target variable pointer. |
+| `*=` | Multiply and assign | x *= 4 | x = x * 4 | Performs multiplication, then updates the target variable pointer. |
+| `/=` | Divide and assign | x /= 2 | x = x / 2 | Divides and always mutates/assigns a floating-point `<class 'float'>`. |
+| `%=` | Modulus and assign | x %= 3 | x = x % 3 | Calculates the remainder, then updates the target variable pointer. |
+| `//=` | Floor divide and assign | x //= 2 | x = x // 2 | Truncates down to a whole integer, then updates the variable pointer. |
+| `**=` | Exponent and assign | x **= 2 | x = x ** 2 | Raises the operand to a power, then updates the target variable pointer. |
+
+```python
+x = 10
+x += 5   # x is now 15
+x -= 3   # x is now 12
+x *= 2   # x is now 24
+x /= 4   # x is now 6.0  (Promoted to float due to division)
+x %= 4   # x is now 2.0
+x **= 3  # x is now 8.0
+
+print(x) # Output: 8.0
+```
+
+### 📋 Key Operational Notes
+- **Variable Initialization Requirement:** You cannot utilize a compound operator (like `+=`) on a variable that does not exist in the active scope. Attempting to execute `y += 5` before defining `y` instantly crashes with a runtime lookup error.
+- **Implicit Type Overwrites:** Operators like `/=` always coerce the target variable's value into a floating point number, even if the division evaluates perfectly evenly.
+- **Sequence Support:** Beyond simple numbers, certain compound operators work seamlessly with strings and lists. For instance, `text = "Hi"; text *= 3` evaluates cleanly to `"HiHiHi"`.
