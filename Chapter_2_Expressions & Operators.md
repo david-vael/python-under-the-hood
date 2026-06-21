@@ -1,4 +1,3 @@
-*Note: Chapter 2 is currently a work-in-progress and being updated daily!*
 
 © 2026 David Vael | Licensed under CC-BY 4.0
 ## Expressions in Python
@@ -562,6 +561,22 @@ if (op_a == op_b) {
     return Py_True;
 }
 ```
-      
-  
+Because it is simply checking if two numbers (memory hexadecimal addresses) are equal, the `is` operator executes instantly in $O(1)$ **constant time complexity**. In stark contrast, running `a == b` on two massive lists requires Python to step through every single element one by one to verify structural parity, scaling heavily to $O(n)$ **linear time**.
+
+- **Singleton Memory Anchors:** Python optimizes global memory consumption by instantiating **singletons** objects that are guaranteed to exist only once in memory for the entire execution lifespan of your program. Objects like `None`, `True`, and `False` are hardcoded at fixed, immutable heap addresses upon engine initialization. Because there is only ever exactly one instance of `None` on the heap, checking if `x is None:` guarantees absolute architectural accuracy and maximum execution speed, making it the universally accepted Pythonic standard.
+
+- **The Interning Trap (Why `x is y` can be True for Integers):** Because integers are immutable, you might expect two separate integer assignments to always generate distinct memory allocations. However, look at this behavior:       
+```python
+x = 100
+y = 100
+print(x is y)  # Output: True  (Surprise! They share an identity)
+
+x2 = 500
+y2 = 500
+print(x2 is y2) # Output: False (Behaves as expected)
+```
+This phenomenon occurs because CPython utilizes an engine-level performance optimization called the **Small Integer Cache**. During system startup, the engine pre-allocates an internal array of `PyLongObject` structs for every single integer spanning from `-5` to `256`.
+
+When you write `x = 100` and `y = 100`, CPython recognizes the value is cached and points both variable identifiers to the exact same pre-allocated integer object inside the global array, resulting in a matching memory identity. For numbers outside this boundary (like `500`), the cache layer is ignored, and entirely separate heap segments are allocated, returning `False` on an identity test. This is why you must **never** use `is` to evaluate numerical math values.
+
 
