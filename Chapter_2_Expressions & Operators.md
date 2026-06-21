@@ -1,4 +1,3 @@
-
 © 2026 David Vael | Licensed under CC-BY 4.0
 ## Expressions in Python
 An __expression__ is a combination of values, variables, operators, and function calls that Python evaluates to produce a result.
