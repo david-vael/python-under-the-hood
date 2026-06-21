@@ -373,3 +373,36 @@ Bitwise operators work directly on the binary representation (the strings of `0`
 | `~` | Bitwise NOT | ~5 | Inverts all the structural bits of the operand. | $\sim x = -(x + 1)$ |
 | `<<` | Left Shift | 5 << 1 | Shifts bits left, appending trailing 0s on the right. | Fast multiplication by $2^n$ |
 | `>>` | Right Shift | 5 >> 1 | Shifts bits right, truncating and dropping the trailing bits. | Fast integer floor division by $2^n$ |
+
+### Code Implementation and Bit-Mapping
+
+```python
+a = 5  # Binary: 101
+b = 3  # Binary: 011
+
+print(a & b)  # Output: 1  (Bit alignment: 101 & 011 = 001)
+print(a | b)  # Output: 7  (Bit alignment: 101 | 011 = 111)
+print(a ^ b)  # Output: 6  (Bit alignment: 101 | 011 = 110)
+print(~a)     # Output: -6 (Inverts bits via Two's Complement)
+print(a << 1) # Output: 10 (101 becomes 1010)
+print(a >> 1) # Output: 2  (101 becomes 10)
+```
+
+### 📋 Key Operational Notes
+- **Integer Exclusive Constraint:** Bitwise operations can only be executed on integer data types (`int`). Attempting to use these operators on floating-point values (`float`) will instantly raise a `TypeError`.
+- **Bit Shift Multipliers:** Shifting bits to the left via `<<` is an incredibly fast way to multiply numbers by powers of 2. Conversely, moving bits to the right via `>>` acts as high-speed integer floor division by powers of 2 at the processor level.
+- **Practical Utilities:** These operators are heavily utilized for handling permission bitmasks (e.g., Read/Write/Execute flags in file systems), network packet structural headers, or optimized cryptographic hashing tasks.
+
+### 🧠 What's happening behind the scenes:
+CPython handles bits uniquely compared to languages like C or C++ because Python integers do not have a fixed size (like 32-bit or 64-bit hardware boundaries). This introduces distinct mechanical behaviors for bit manipulation.
+- **The Mystery of Bitwise NOT (`~5 == -6`):** A frequent surprise for developers is why bitwise inverting `5` yields `-6` instead of simply flipping the active binary digits.
+    - Python integers are stored using Two's Complement representation for negative numbers.
+    - Because Python integers feature arbitrary precision (conceptually infinite bits), a positive number like `5` is preceded by an infinite string of imaginary sign extension bits: `...00000101`.
+    - When you apply the unary `~` operator, every single one of those infinite leading zeros flips into a `1`: `...11111010`.
+    In Two's Complement notation, a binary pattern starting with an unbroken sequence of leading `1`s represents a negative integer value. The internal C math scales this relationship to the exact structural formula:
+         $$\sim x = -(x + 1)$$
+    Thus, `~5` evaluates directly to $-(5 + 1) = -6$.
+
+**Vectorized Bitwise Operations inside `PyLongObject`:** Because CPython integers can grow infinitely large, the virtual machine runtime cannot simply dump the variables straight into the CPU's native hardware registers for a single assembly instruction execution step. When executing an instruction like `&`, `|`, or `^`, the interpreter falls back to specialized internal C functions like `long_and`, `long_or`, or `long_xor`.These functions inspect the underlying structural digits array stored inside the heap layout of the `PyLongObject`. The engine loops through the target memory blocks (known as "digits" in CPython architecture) one by one, performs the raw bitwise logic on those isolated array elements, and instantiates an appropriately sized new integer payload block to hold the resulting binary sequence.
+
+
