@@ -698,4 +698,89 @@ if (x & 1) == 1:
 
 
 ### Chapter 2 Comprehensive Knowledge Assessment 
+### Level 1: 
+
+**Question 1**
+Categorize each of the following lines of code as either an **Expression** or a **Statement**, and explicitly state what payload or action it yields:
+```python
+1.  print("Core Architecture")
+2.  a = 12 * 4
+3.  [x * 2 for x in range(3)]
+4.  del a
+```
+
+**Question 2**
+What are the exact data types and literal evaluation values of the following three operations?
+```python
+result_a = 20 / 5
+result_b = 20 // 6
+result_c = -20 // 6
+```
+### Level 2: 
+**Question 3**
+Predict the exact terminal output and returned data object reference type of the following logical expressions:
+```python
+output_1 = [] and "Python"
+output_2 = "CPython" or 42
+output_3 = not ""
+```
+
+**Question 4**
+A developer attempts to filter out empty datasets and print boundaries using the following conditional statement:
+```python
+score = 0
+if score:
+    print(f"Valid submission score: {score}")
+```
+Explain the operational pitfall hidden in this condition, and rewrite it using the precise, idiomatic Pythonic approach to safely separate a valid zero from an uninitialized tracking state.
+
+### Level 3: 
+**Question 5**
+Examine the following two separate code chunks executing string manipulations:
+```python
+# Chunk A
+str_a = "Bytecode" + " " + "Pipeline"
+
+# Chunk B
+str_b = "Bytecode"
+str_b += " "
+str_b += "Pipeline"
+```
+From an internal memory management standpoint, describe how CPython compiles and allocates heap space for these two blocks differently. Reference the specific number of intermediate allocations and explain how the compiler optimizes Chunk A.
+
+**Question 6**
+Predict the terminal output of the following block and diagram exactly what happens inside CPython's heap memory allocations and local variable namespace registry arrays:
+```python
+val_1 = 250 + 6
+val_2 = 250 + 6
+print(val_1 is val_2)
+
+val_3 = 300 + 5
+val_4 = 300 + 5
+print(val_3 is val_4)
+```
+
+### Level 4: 
+**Question 7**
+Trace the step-by-step bytecode generation and execution stack frame adjustments for the following two independent statements:
+```python
+# Statement A
+data = 100
+
+# Statement B
+(data := 100)
+```
+In your breakdown, explicitly contrast the usage of the `POP_TOP`, `STORE_FAST`, and `DUP_TOP` instructions, explaining exactly why Statement B is legally accepted inside an outer condition wrapper (like an `if` block) while Statement A triggers a compile-time `SyntaxError`.
+
+Question 8
+Evaluate the following bitwise operation:
+
+```python
+x = 12
+print(~x)
+```
+1. Express `12` in its binary layout form, including its implicit, arbitrary-precision sign extension bits.
+2. Step through how CPython applies the bitwise NOT (`~`) operator at the C layer across those infinite bits using Two's Complement rules.
+3. Show the mathematical identity formula that proves the resulting integer value output.
+
 
