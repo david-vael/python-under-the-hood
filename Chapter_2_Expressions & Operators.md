@@ -772,7 +772,7 @@ data = 100
 ```
 In your breakdown, explicitly contrast the usage of the `POP_TOP`, `STORE_FAST`, and `DUP_TOP` instructions, explaining exactly why Statement B is legally accepted inside an outer condition wrapper (like an `if` block) while Statement A triggers a compile-time `SyntaxError`.
 
-Question 8
+**Question 8**
 Evaluate the following bitwise operation:
 
 ```python
