@@ -783,4 +783,176 @@ print(~x)
 2. Step through how CPython applies the bitwise NOT (`~`) operator at the C layer across those infinite bits using Two's Complement rules.
 3. Show the mathematical identity formula that proves the resulting integer value output.
 
+---
+
+### 🏆Assessment Answer Key & Solutions
+
+# Level 1: 
+
+## Solution to Question 1: Expression vs. Statement Categorization
+
+```python
+print("Core Architecture")
+```
+* **Category:** Expression.
+* **Yield:** Evaluates to a function call that executes an I/O side-effect (printing text to standard output) and explicitly returns the singleton object reference `None`.
+
+```python
+a = 12 * 4
+```
+* **Category:** Statement (specifically, a simple Assignment Statement).
+* **Yield:** Binds the identifier pointer name `"a"` inside the local namespace dictionary frame to a newly calculated integer object `48`. It returns absolutely nothing to the evaluation stack.
+
+```python
+[x * 2 for x in range(3)]
+```
+* **Category:** Expression (List Comprehension).
+* **Yield:** Evaluates down to a newly allocated `<class 'list'>` object reference in heap memory holding the calculated elements: `[0, 2, 4]`.
+
+```python
+del a
+```
+* **Category:** Statement.
+* **Yield:** Unbinds and removes the reference name `"a"` from the local variable namespace array. If the object’s reference count drops to zero, it flags it for immediate garbage collection reclamation.
+
+---
+
+## Solution to Question 2: Mathematical Type and Coercion Analysis
+
+### `result_a = 20 / 5`
+* **Data Type:** `<class 'float'>`
+* **Literal Value:** `4.0`
+* **Internal Rule:** The true division operator (`/`) always shifts the output to an IEEE 754 double-precision float structure, even when dividing perfectly evenly.
+
+### `result_b = 20 // 6`
+* **Data Type:** `<class 'int'>`
+* **Literal Value:** `3`
+* **Internal Rule:** Floor division (`//`) truncates the quotient toward minus infinity. 20 / 6 = 3.333..., which floors directly to `3`.
+
+### `result_c = -20 // 6`
+* **Data Type:** `<class 'int'>`
+* **Literal Value:** `-4`
+* **Internal Rule:** Floor division truncates toward negative infinity. -20 / 6 = -3.333..., which floors downward past -3 to yield `-4`.
+
+***
+
+# Level 2: 
+
+## Solution to Question 3: Logical Operators & Return Values
+
+### `output_1 = [] and "Python"`
+* **Terminal Output / Object:** `[]`
+* **Reference Type:** `<class 'list'>`
+* **Internal Rule:** The `and` operator runs short-circuit logic. Since an empty list `[]` is evaluated as falsy via `PyObject_IsTrue()`, evaluation halts instantly and returns the actual, un-coerced left-hand object `[]`.
+
+### `output_2 = "CPython" or 42`
+* **Terminal Output / Object:** `"CPython"`
+* **Reference Type:** `<class 'str'>`
+* **Internal Rule:** The `or` operator short-circuits on its very first truthy condition. Since a non-empty string is truthy, execution immediately returns `"CPython"`.
+
+### `output_3 = not ""`
+* **Terminal Output / Object:** `True`
+* **Reference Type:** `<class 'bool'>`
+* **Internal Rule:** The unary `not` operator always forces a strict Boolean conversion. Because an empty string `""` is structurally falsy, `not` completely inverts it to the global singleton `True`.
+
+---
+
+## Solution to Question 4: The Zero Evaluation Pitfall
+
+* **The Hidden Pitfall:** In Python, the integer value `0` evaluates implicitly to a falsy state when evaluated inside a conditional expression pointer check. Therefore, if a student or sensor genuinely submits a completely valid score of `0`, the code blocks execution and routes to the `else` path, misidentifying a real numeric score as an uninitialized tracking state (`None`).
+* **The Idiomatic Remediated Fix:** You must enforce an explicit identity check against the `None` singleton to accurately filter out uninitialized states from legitimate zeroes:
+
+```python
+score = 0
+
+# Safe, identity-isolated condition
+if score is not None:
+    print(f"Valid submission score: {score}")
+```
+
+***
+
+# Level 3:
+
+## Solution to Question 5: String Compilation Optimization
+
+### Chunk A Optimization (`"Bytecode" + " " + "Pipeline"`)
+During the compilation phase, CPython’s AST optimizer applies a process known as **Constant Folding**. Because all operands are literal string constants known at compile time, the compiler completely processes the concatenation upfront and outputs a single, folded string constant object (`"Bytecode Pipeline"`) directly into the compiled bytecode data array. 
+* **Total intermediate allocations at runtime:** `0`
+
+### Chunk B Multi-Allocation Execution
+Because these operations occur on distinct sequential lines, the compiler must emit step-by-step instructions:
+1. It instantiates an initial string allocation for `"Bytecode"`.
+2. It processes `str_b += " "`, resulting in a brand-new intermediate string allocation for `"Bytecode "`.
+3. It processes `str_b += "Pipeline"`, necessitating a third, separate string allocation in the heap memory block.
+* **Total intermediate allocations at runtime:** `2` (before old strings are released by the garbage collector).
+
+---
+
+## Solution to Question 6: Integer Caching and Memory Identities
+
+### Plaintext Output
+```text
+True
+False
+```
+
+### Behind-the-Scenes Memory Mapping & Breakdown
+* **The Constant Folding Phase:** Before running, the compiler folds the addition operations. `val_1` and `val_2` resolve directly into `256`, while `val_3` and `val_4` resolve directly into `305`.
+* **The Small Integer Cache Rule:** During initialization, CPython instantiates a static global array of `PyLongObject` blocks for all integers ranging from `-5` to `256`.
+* **Evaluating `val_1 is val_2`:** When assigning `256`, both `val_1` and `val_2` local namespace pointer variables are assigned to point to the exact same, pre-allocated memory slot in the integer cache array. Because the physical hexadecimal pointers match perfectly, `is` returns `True`.
+* **Evaluating `val_3 is val_4`:** Because `305` falls completely outside the integer cache boundary constraints, CPython must perform a separate, unique memory allocation on the heap for each assignment line. `val_3` and `val_4` end up referencing distinct `PyLongObject` instances at different memory addresses, making the identity pointer test evaluate to `False`.
+
+***
+
+# Level 4:
+
+## Solution to Question 7: Bytecode and Execution Stack Frame Tracking
+
+### 1. Bytecode Breakdown for Statement A (`data = 100`)
+```text
+LOAD_CONST     (100)  # Pushes integer 100 pointer onto evaluation stack
+STORE_FAST     (data) # Pops pointer off evaluation stack into local variable namespace array
+```
+* **Stack State:** The stack is left perfectly clean and empty.
+
+### 2. Bytecode Breakdown for Statement B (`(data := 100)`)
+```text
+LOAD_CONST     (100)  # Pushes integer 100 pointer onto evaluation stack
+DUP_TOP               # Duplicates the top element of the stack
+STORE_FAST     (data) # Pops the duplicated pointer off to bind the namespace variable
+```
+* **Stack State:** One copy of the integer `100` pointer remains resting right at the head of the evaluation stack.
+
+### Why Statement A Fails inside an `if` Statement
+An `if` statement node expects its condition block to evaluate down to an expression that leaves a valid data pointer sitting on top of the stack for its conditional jump operation to evaluate. 
+
+Because a standard assignment statement (`data = 100`) uses a single `STORE_FAST` block, it leaves nothing behind on the stack. Passing it to an if block leaves the compiler with no value to audit, triggering a compile-time `SyntaxError`. The Walrus Operator uses `DUP_TOP` to actively preserve a copy of the pointer on the stack, satisfying the condition block's structural requirement.
+
+---
+
+## Solution to Question 8: Two's Complement Bitwise NOT Architecture
+
+### 1. Binary Layout Configuration
+Representing the integer `12` under Python’s arbitrary-precision model includes a theoretical stream of infinite leading sign extension zeros mapping toward the left:
+
+$$\text{Value (12)} = \dots 0000000000001100_2$$
+
+### 2. Applying the Bitwise NOT Instruction (`~`)
+When CPython executes the `~` instruction, it maps directly to an inversion sweep across every single bit, converting all infinite leading sign zeros into active ones:
+
+$$\text{Inverted Bits} = \dots 1111111111110011_2$$
+
+In computing architecture using Two's Complement layout patterns, any binary sequence beginning with a stream of infinite leading 1 sign bits represents a negative integer.
+
+### 3. The Proving Mathematical Identity
+To decode the decimal value of this negative binary pattern, CPython evaluates it against the strict mathematical identity:
+
+$$\sim x = -(x + 1)$$
+
+Plugging in our initial variable value ($x = 12$):
+
+$$\sim 12 = -(12 + 1) = -13$$
+
+The terminal output of `print(~12)` evaluates perfectly to `-13`.
 
