@@ -579,3 +579,5 @@ This phenomenon occurs because CPython utilizes an engine-level performance opti
 When you write `x = 100` and `y = 100`, CPython recognizes the value is cached and points both variable identifiers to the exact same pre-allocated integer object inside the global array, resulting in a matching memory identity. For numbers outside this boundary (like `500`), the cache layer is ignored, and entirely separate heap segments are allocated, returning `False` on an identity test. This is why you must **never** use `is` to evaluate numerical math values.
 
 
+### The Assignment Expression(The walrus operator `:=`)
+Introduced in Python 3.8, the **Assignment Expression** (syntactically denoted by `:=` and affectionately known as the **Walrus Operator**) explicitly shatters the rigid boundary between expressions and statements.
