@@ -581,3 +581,91 @@ When you write `x = 100` and `y = 100`, CPython recognizes the value is cached a
 
 ### The Assignment Expression(The walrus operator `:=`)
 Introduced in Python 3.8, the **Assignment Expression** (syntactically denoted by `:=` and affectionately known as the **Walrus Operator**) explicitly shatters the rigid boundary between expressions and statements.
+
+As established earlier, a standard variable assignment (`x = 5`) is a statement. it executes an action but leaves nothing behind on the virtual machine stack, meaning it cannot be nested inside other operations. The Walrus Operator changes this completely by allowing you to **assign a value to a variable while simultaneously returning that value as an expression output**.
+
+```python
+# Standalone Statement approach:
+line = input()
+if line:
+    print(f"Processing: {line}")
+
+# Inline Assignment Expression approach:
+if line := input():
+    print(f"Processing: {line}")
+# 1. input() executes and yields a string object reference.
+# 2. := captures that string and binds it to the namespace variable 'line'.
+# 3. Simultaneously, it leaves that exact value sitting on the stack for the 'if' condition to evaluate.
+```
+
+### 📋 Code Implementation Examples
+## 1. High-Efficiency Loop Controls
+Without the walrus operator, pulling data chunks from an external stream requires a clunky initialization loop layout that duplicates code lines. The assignment expression condenses this pattern into a single, clean, inline verification block:
+
+```python
+# Traditional chunk-reading pattern (Verbose code duplication)
+chunk = stream.read(1024)
+while chunk:
+    process(chunk)
+    chunk = stream.read(1024)
+
+# Streamlined Walrus pattern
+while chunk := stream.read(1024):
+    process(chunk)
+```
+
+## 2. Collection Comprehension Optimization
+When filtering lists based on an expensive calculation, developers frequently run the same heavy function twice: once for the conditional `if` filter clause and once for the output transformation. The walrus operator calculates the payload exactly once:
+
+```python
+def calculate_cost(item):
+    # Simulating a heavy computation or database lookup
+    return item * 42
+
+inventory = [1, 5, 12, 18]
+
+# Optimized Comprehension: Binds 'cost' inline during the loop evaluation
+expensive_orders = [cost for x in inventory if (cost := calculate_cost(x)) > 200]
+print(expensive_orders)  # Output: [210, 504, 756]
+```
+
+### 📋 Key Operational Notes
+
+- **Parentheses Enforcement:** Because `:=` has a very low operator precedence rank, you must frequently wrap the assignment expression inside explicit grouping parentheses `()` when combining it with other operational conditions (e.g., `if (value := fetch_data()) is not None:`).
+- **Scope Availability and Leakage:** Variables assigned using the walrus operator inside a conditional block or list comprehension remain completely visible and accessible inside the surrounding local namespace even after the primary expression block finishes executing.
+
+### 🧠 What's happening behind the scenes:
+The walrus operator is a compiler level syntactic feature that fundamentally changes how values are retained on or cleared off the virtual machine evaluation stack.
+
+- **Bypassing the `POP_TOP` Evacuation:** Recall that when CPython evaluates a standard expression on its own line, it compiles it as an `Expr` node and appends a `POP_TOP` instruction to discard the data pointer. Conversely, when it parses a traditional assignment statement (`x = 5`), it uses `STORE_FAST` to instantly pop that value off the stack and map it to the local variable table.
+  The Walrus Operator introduces a hybrid compilation path. When the compiler encounters `line := input()`, it emits the instructions to execute the function, followed by a `DUP_TOP` (Duplicate Top of Stack) or a specialized stack preservation instruction:
+     1. It pushes the string result pointer of `input()` onto the evaluation stack.
+     2. It duplicates that pointer right on top of the stack.
+     3. It pops one of those pointer copies off to execute a standard `STORE_FAST` binding, anchoring the variable name `line` in your local namespace dictionary.
+     4. It leaves the second pointer copy sitting completely undisturbed right at the head of the evaluation stack.
+     Because that second copy remains on the stack, the surrounding outer container (like a `while` loop or an `if` conditional node) has a direct, valid data pointer available to evaluate immediately without making a second function call or object lookup.
+
+- **Syntactic Isolation in Comprehensions:** If you look at the Abstract Syntax Tree (AST) of a list comprehension containing a walrus operator, the compiler explicitly flags the target variable as a non-localized frame update. It forces the `STORE_FAST` operation to look past the isolated, hidden comprehension loop scope block and write directly into the parent function's variable array frame, which explains why the variable's state leaks gracefully into your outer context.\
+
+### Operator Precedence and Evaluation Order
+When you combine multiple operators into a single complex expression, Python must determine which operations execute first. Python follows a strict, hardcoded precedence hierarchy. Operators listed higher in this table take execution priority over operators located below them.
+
+### 📋 The Complete Precedence Hierarchy (Highest to Lowest)
+
+| Precedence | Operator Group | Symbols | Description / Direction |
+| :---: | :--- | :--- | :--- |
+| 1 | Binding & Grouping | `( )`, `[ ]`, `{ }` | Parentheses, list literals, dictionary/set creation. |
+| 2 | Access & Selection | `expr.attr`, `expr[index]`, `expr(args)` | Attribute references, subscript slicing, function calls. |
+| 3 | Exponentiation | `**` | Left-to-right calculation (except when chained). |
+| 4 | Unary Sign Modifiers | `+x`, `-x`, `~x` | Positive, negative signs, and bitwise NOT. |
+| 5 | Multiplicative Math | `*`, `/`, `//`, `%` | Multiplication, division, floor division, modulus. |
+| 6 | Additive Math | `+`, `-` | Binary addition and subtraction. |
+| 7 | Bitwise Shifting | `<<`, `>>` | Left and right bitwise element shifts. |
+| 8 | Bitwise AND | `&` | Raw bitwise intersection mask. |
+| 9 | Bitwise XOR | `^` | Raw bitwise exclusive toggle. |
+| 10 | Bitwise OR | `\|` | Raw bitwise inclusive flag setter. |
+| 11 | Comparisons & Containment | `==`, `!=`, `<`, `>`, `<=`, `>=`, `is`, `is not`, `in`, `not in` | Structural equality, identity checks, and sequence membership tests. |
+| 12 | Logical NOT | `not x` | Boolean negation operator. |
+| 13 | Logical AND | `and` | Short-circuit boolean conjunction. |
+| 14 | Logical OR | `or` | Short-circuit boolean disjunction. |
+| 15 | Assignment Expression | `:=` | The Walrus Operator (Named expression binding). |
