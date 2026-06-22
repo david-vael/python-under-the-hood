@@ -782,7 +782,7 @@ print(~x)
 1. Express `12` in its binary layout form, including its implicit, arbitrary-precision sign extension bits.
 2. Step through how CPython applies the bitwise NOT (`~`) operator at the C layer across those infinite bits using Two's Complement rules.
 3. Show the mathematical identity formula that proves the resulting integer value output.
-***
+
 
 ### 🏆Assessment Answer Key & Solutions
 
