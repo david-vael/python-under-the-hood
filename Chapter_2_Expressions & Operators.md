@@ -20,7 +20,7 @@ len("hello")   # Evaluates to 5
 
 **Versatile components**: They can seamlessly mix raw numbers, namespace variables, symbols, and function return values.
 
-**Varying complexity**: Expressions can range from simple, single-step operations `(2 + 3)` to highly complex, nested computations (`(a + b) * c / (d - 2)`).
+**Varying complexity**: Expressions can range from simple, single step operations `(2 + 3)` to highly complex, nested computations (`(a + b) * c / (d - 2)`).
 
 **Flexible execution**: You can plug expressions into any slot where Python expects a value, including variable assignments, function arguments, or conditional statements.
 
@@ -41,7 +41,7 @@ Arithmetic expressions use mathematical operators to perform calculations on num
 ### 🧠 What's happening behind the scenes:
 When CPython evaluates arithmetic expressions, it manages memory allocation, operator selection, and optimization using specific internal engine rules:
 
-- **Binary Operator Dispatch**: Every time you use an arithmetic symbol like `+` or `%`, CPython does not interpret the symbol directly at runtime. Instead, the virtual machine checks the type descriptor slot of the left-hand operand object (e.g., `PyLong_Type` for integers) and dispatches the calculation directly to its corresponding native C functions, such as `long_add`, `long_sub`, or `long_mod`.
+- **Binary Operator Dispatch**: Every time you use an arithmetic symbol like `+` or `%`, CPython does not interpret the symbol directly at runtime. Instead, the virtual machine checks the type descriptor slot of the left hand operand object (e.g., `PyLong_Type` for integers) and dispatches the calculation directly to its corresponding native C functions, such as `long_add`, `long_sub`, or `long_mod`.
 
 - **Fixed Allocation vs. Integer Caching**: Because numeric types in Python are strictly **immutable** objects, any arithmetic operation must conceptually generate a brand-new numeric object on the heap to store the resulting payload. However, to eliminate massive performance overhead, CPython optimizes memory usage:
 
@@ -49,7 +49,7 @@ When CPython evaluates arithmetic expressions, it manages memory allocation, ope
 
      - If the result falls outside this range (e.g., `4 * 6 = 24` hits the cache, whereas `300 + 200 = 500` misses it), CPython dynamically allocates a completely new block of heap memory to instantiate a new `PyLongObject`.
 
-- **Truncation Mechanics in Floor Division (`//`)**: Unlike true division (`/`), which invokes `long_true_divide` and automatically promotes the output to a `PyFloatObject`, floor division (`//`) invokes `long_floor_divide`. At the C layer, this performs truncating division that floors the mathematical quotient toward negative infinity. If both operands are integers, the returned chunk remains a pure `PyLongObject`, avoiding floating-point execution and precision overhead entirely.
+- **Truncation Mechanics in Floor Division (`//`)**: Unlike true division (`/`), which invokes `long_true_divide` and automatically promotes the output to a `PyFloatObject`, floor division (`//`) invokes `long_floor_divide`. At the C layer, this performs truncating division that floors the mathematical quotient toward negative infinity. If both operands are integers, the returned chunk remains a pure `PyLongObject`, avoiding floating point execution and precision overhead entirely.
 
 **2. Logical and Relational Expressions**
 These expressions use relational (comparison) and logical operators to evaluate conditions, ultimately producing a truth value or returning one of the evaluated operands.
@@ -80,7 +80,7 @@ When CPython processes logical and comparison expressions, it avoids unnecessary
 
    3. **The Default Fallback**: If neither slot is defined by the type descriptor, the object automatically defaults to truthy.
 
-- **Chained Comparison Stack Optimizations**: When parsing a chained comparison like `3 < x < 5`, Python handles it uniquely. Instead of evaluating `3 < x` into a temporary boolean and erroneously comparing `True < 5`, the compiler desugars the expression into an implicit logical conjunction equivalent to `(3 < x) and (x < 5)`. Crucially, to prevent expensive redundant evaluations or unintended side-effects (such as if `x` were a heavy function call like `get_current_user()`), CPython utilizes its internal evaluation stack to store and duplicate the intermediate pointer, ensuring `x` is evaluated **exactly once**.
+- **Chained Comparison Stack Optimizations**: When parsing a chained comparison like `3 < x < 5`, Python handles it uniquely. Instead of evaluating `3 < x` into a temporary boolean and erroneously comparing `True < 5`, the compiler desugars the expression into an implicit logical conjunction equivalent to `(3 < x) and (x < 5)`. Crucially, to prevent expensive redundant evaluations or unintended side effects (such as if `x` were a heavy function call like `get_current_user()`), CPython utilizes its internal evaluation stack to store and duplicate the intermediate pointer, ensuring `x` is evaluated **exactly once**.
   
 **3. String Expressions**
 String expressions evaluate and manipulate text sequences to produce new, immutable string objects (`str`).
@@ -98,7 +98,7 @@ Strings in Python are immutable arrays of Unicode code points internally represe
 
     - Optimization Note: While looping sequential additions (e.g., inside a `for` loop) causes massive memory churn due to repeated allocations, chaining string concatenations in a single evaluation statement (such as `s = s1 + s2 + s3`) allows CPython's compiler to optimize the sequence by pre-calculating the final buffer size upfront, minimizing intermediate memory allocations.
 
-- **Repetition Mechanics (`*`)**: When evaluating `"Python " * 3`, CPython dispatches the execution to the string type descriptor's sequence repetition slot function, historically known as `unicode_repeat`. Rather than running a series of additions, it calculates the definitive target size all at once ($7 \text{ characters} \times 3 = 21 \text{ bytes}$ plus the trailing null terminator byte). It then drops into low-level, hardware-optimized C `memcpy` loops to rapidly stamp the repeating character bit patterns directly into the fresh heap allocation slot.
+- **Repetition Mechanics (`*`)**: When evaluating `"Python " * 3`, CPython dispatches the execution to the string type descriptor's sequence repetition slot function, historically known as `unicode_repeat`. Rather than running a series of additions, it calculates the definitive target size all at once ($7 \text{ characters} \times 3 = 21 \text{ bytes}$ plus the trailing null terminator byte). It then drops into low-level, hardware optimized C `memcpy` loops to rapidly stamp the repeating character bit patterns directly into the fresh heap allocation slot.
 
 - **The High-Speed Architecture of f-Strings (`f"..."`)**: Legacy string formatting using `%` or `.format()` requires heavy runtime parsing loops to decode formatting placeholders. Modern f-strings bypass this performance penalty entirely by being optimized directly during the compilation phase. When the compiler intercepts an f-string literal, it emits specialized, hardware-friendly `FORMAT_VALUE` and `BUILD_STRING` bytecode instructions. Instead of parsing string tokens at runtime, the virtual machine handles the expression as a lightning-fast, highly localized concatenation routine—coercing the variable `x` to a string pointer on the fly and writing it straight into a pre-calculated target memory layout without any heavy method lookup overhead.
 
@@ -148,7 +148,7 @@ LOAD_CONST               (8)      # Pushes the integer 8 pointer onto the stack
 STORE_NAME               (x)      # Pops the 8 off the stack and binds it to the key "x" in locals()
 ```
 
-- **The Nesting Constraint**: Notice that the assignment statement `x = 5 + 3` alters the global or local namespace dictionary (`locals()`). It maps the string identifier key `"x"` to the specific heap memory address of the integer `8`. Because statements represent execution commands rather than operand values, they leave nothing behind on the evaluation stack. This is why attempting to nest a statement inside an expression—such as writing `print(x = 5)` instantly triggers a compile-time `SyntaxError: invalid syntax`. The statement has no object pointer to hand over to the function's argument slot!
+- **The Nesting Constraint**: Notice that the assignment statement `x = 5 + 3` alters the global or local namespace dictionary (`locals()`). It maps the string identifier key `"x"` to the specific heap memory address of the integer `8`. Because statements represent execution commands rather than operand values, they leave nothing behind on the evaluation stack. This is why attempting to nest a statement inside an expression—such as writing `print(x = 5)` instantly triggers a compile time `SyntaxError: invalid syntax`. The statement has no object pointer to hand over to the function's argument slot!
 
 ### Arithmetic Operators in Python
 Arithmetic operators are used to perform mathematical calculations on numeric values. They allow you to execute everything from basic addition to specialized operations like remainder tracking and exponentiation.
@@ -180,7 +180,7 @@ print(a ** b)  # Output: 1000               (10 cubed)
 
 ### 📋 Key Operational Notes
 
-- **True Division (`/`) Consistency**: Division always outputs a floating-point number. Even an even split like `10 / 5` yields `2.0`, never an ordinary integer `2`.
+- **True Division (`/`) Consistency**: Division always outputs a floating point number. Even an even split like `10 / 5` yields `2.0`, never an ordinary integer `2`.
 
 - **Floor Division (`//`) Math**: It truncates the fractional remainder and rounds down to the nearest whole integer toward the lower floor.
 
@@ -202,7 +202,7 @@ While standard arithmetic looks basic on the surface, CPython utilizes distinct 
 
 - **Arbitrary Precision vs. Hardware Floats**: When performing math on integers versus floats, the underlying memory objects behave completely differently inside RAM:
 
-  - **`PyLongObject` (Integers)**: Feature arbitrary precision. CPython stores integers as a dynamic array of digitized bits in memory rather than a fixed-width CPU word. This means your integers can grow as large as your computer's RAM allows without ever experiencing an integer overflow.
+  - **`PyLongObject` (Integers)**: Feature arbitrary precision. CPython stores integers as a dynamic array of digitized bits in memory rather than a fixed width CPU word. This means your integers can grow as large as your computer's RAM allows without ever experiencing an integer overflow.
   - **`PyFloatObject` (Floats)**: Are strictly bounded. They map directly to your physical CPU's native 64-bit IEEE 754 double-precision standard. Because of this hardware-level limitation, expressions `like 10 / 3` cannot store infinitely repeating decimals, causing small, inevitable floating-point precision drop-offs at the 16th decimal place.
   
 ### Comparison Operators in Python
