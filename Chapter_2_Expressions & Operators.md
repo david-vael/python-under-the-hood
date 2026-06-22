@@ -669,3 +669,33 @@ When you combine multiple operators into a single complex expression, Python mus
 | 13 | Logical AND | `and` | Short-circuit boolean conjunction. |
 | 14 | Logical OR | `or` | Short-circuit boolean disjunction. |
 | 15 | Assignment Expression | `:=` | The Walrus Operator (Named expression binding). |
+
+### 📋 Code Evaluation Examples
+
+Example 1: Mixing Arithmetic and Comparisons
+```python
+result = 5 + 3 * 2 > 10
+```
+- **Step 1:** Multiplicative math (`*`) has a higher precedence than addition (`+`), so `3 * 2` runs first, yielding `6`. The expression simplifies to: `5 + 6 > 10`.
+- **Step 2:** Additive math (`+`) outranks comparisons (`>`), so `5 + 6` executes next, yielding `11`. The expression simplifies to: `11 > 10`.
+- **Step 3:** The comparison runs last, evaluating down to the singleton boolean reference `True`.
+
+### Example 2: Bitwise and Logical Precedence Traps
+
+```python
+x = 5
+if x & 1 == 1:
+    print("Odd number")
+```
+- **The Trap:** Looking at the precedence table, comparison operators (`==`) actually have a **higher** precedence rank than the bitwise AND (`&` operator.
+- **The Behind-the-Scenes Evaluation:** Python evaluates `1 == 1` first, which reduces to the boolean True (treated numerically as `1` at the C layer). The expression then desugars down to `x` & `1`. Because `5 & 1` is `1` (which is truthy via `PyObject_IsTrue`), the block executes perfectly, but the evaluation path did not do what the developer visually expected.
+- **The Secure Remediated Fix:** Always enforce your desired execution path explicitly by using structural grouping parentheses:\
+
+```python
+if (x & 1) == 1:
+    print("Guaranteed safe evaluation")
+```
+
+
+### Chapter 2 Comprehensive Knowledge Assessment 
+
