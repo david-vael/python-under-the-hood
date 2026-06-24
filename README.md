@@ -1,12 +1,12 @@
 # Python Under the Hood
 
-A comprehensive, multi-level guide to Python programming and memory internals for the next generation of developers.
+A comprehensive, multi level guide to Python programming and memory internals for the next generation of developers.
 
 ---
 
 ## 💡 About This Project
 
-Python is famously easy to write, but what happens behind the scenes when your code executes? This project is a deep-dive educational resource designed to bridge the gap between high-level Python syntax and the low-level CPython mechanics that power it. 
+Python is famously easy to write, but what happens behind the scenes when your code executes? This project is a deep-dive educational resource designed to bridge the gap between high level Python syntax and the low level CPython mechanics that power it. 
 
 Whether you are looking to optimize your code, prepare for advanced technical interviews, or simply satisfy your curiosity about compilers and memory management, this guide is for you.
 
@@ -18,6 +18,7 @@ I am a **contributing member of the Python Software Foundation (PSF)**. This rep
 
 Current Progress:
 ✅ Chapter 1 – Variables & Memory
+✅ Chapter 2 – Expressions & Operators
 
 Currently Working On:
 🔄 Next chapter in development
