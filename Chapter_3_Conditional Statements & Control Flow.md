@@ -13,4 +13,4 @@ if condition:
 ```
 
 ### Key Components:
-- **The if Keyword: Initiates the conditional evaluation check sequence inside the execution scope.
+- **The if Keyword:** Initiates the conditional evaluation check sequence inside the execution scope.
