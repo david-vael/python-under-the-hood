@@ -70,7 +70,7 @@ If we pass this code through Python’s internal `dis` (disassembler) module, th
               4 COMPARE_OP              74 (>=)
              10 POP_JUMP_IF_FALSE        6 (to 24)
 
-  2          12 LOAD_NAME                1 (print)
+2            12 LOAD_NAME                1 (print)
              14 LOAD_CONST               1 ('You are eligible to vote')
              16 CALL                     1
              22 POP_TOP
@@ -78,3 +78,10 @@ If we pass this code through Python’s internal `dis` (disassembler) module, th
              26 RETURN_VALUE
 ```
 
+**The Evaluation Flow Control Steps:**
+1. **`LOAD_NAME` & `LOAD_CONST`:** CPython pushes the value pointer stored in the variable `age` onto the evaluation stack, followed quickly by the constant literal value `18`.
+2. **COMPARE_OP:** The virtual machine pops both values off the stack, executes the binary comparison (`>=`) at the C layer, and pushes the resulting boolean singleton (`True` or `False`) right back onto the head of the evaluation stack.
+3. **`POP_JUMP_IF_FALSE`:** This is where the core magic of control flow routing happens. This instruction pops the Boolean result off the top of the stack and inspects its state:
+    - **The `True` Path:** If the value is `True`, the instruction does nothing, and the virtual machine naturally slips down to the very next sequence line of bytecode (`LOAD_NAME` for the print function at offset 12).
+    - **The `False` Path:** If the value is `False`, the instruction updates the VM's internal instruction pointer registry and completely jumps the execution track down to offset `24` (`LOAD_CONST None`). By forcing a branch jump directly to offset 24, it entirely skips the sequential instructions responsible for loading, setting up, and invoking the `CALL` stack for the `print()` function!
+   
