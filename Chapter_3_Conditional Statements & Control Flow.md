@@ -6,7 +6,7 @@ The `if` statement is one of the most fundamental building blocks of programming
 
 ### 📋 Basic Syntax
 The foundational structural layout of an `if` statement relies entirely on Python's unique, whitespace-driven block-scoping rules:
-```pyhton
+```python
 if condition:
     # Code block to execute
     # This runs only if the condition evaluates to True or Truthy
