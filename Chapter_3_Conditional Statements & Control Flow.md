@@ -85,3 +85,24 @@ If we pass this code through Python’s internal `dis` (disassembler) module, th
     - **The `True` Path:** If the value is `True`, the instruction does nothing, and the virtual machine naturally slips down to the very next sequence line of bytecode (`LOAD_NAME` for the print function at offset 12).
     - **The `False` Path:** If the value is `False`, the instruction updates the VM's internal instruction pointer registry and completely jumps the execution track down to offset `24` (`LOAD_CONST None`). By forcing a branch jump directly to offset 24, it entirely skips the sequential instructions responsible for loading, setting up, and invoking the `CALL` stack for the `print()` function!
    
+
+### Example 2: Using a Boolean Variable
+```python
+is_logged_in = True
+if is_logged_in:
+    print("Welcome back!")
+```
+
+## Step-By-Step Breakdown:
+1. **Boolean Evaluation:** The identifier name `is_logged_in` is directly bound to the global Boolean singleton `True`. Because it is already a Boolean object, no evaluation modifier or comparison operator is required.
+2. **Direct Evaluation:** Writing `if is_logged_in:` is functionally identical to writing `if is_logged_in == True:`, but the shorter form bypasses raw comparison overhead and is the highly preferred, idiomatic Pythonic approach.
+3. **Result:** Since the variable directly holds a true value, the condition evaluates successfully and prints: `Welcome back!`.
+
+## Alternative: Checking for `False` states with Logical Inversion
+```python
+is_logged_in = False
+if not is_logged_in:
+    print("Please log in first")
+```
+
+The logical unary operator `not` completely reverses the Boolean value of the expression following it. Since `is_logged_in` is `False`, the expression not `is_logged_in` evaluates directly to `Tru`e. Because the resulting evaluation state is true, the indented branch executes perfectly, printing: `Please log in first`.
