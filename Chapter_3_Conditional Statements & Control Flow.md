@@ -65,17 +65,17 @@ Let’s lift up the hood and look at the exact CPython bytecode generated for th
 If we pass this code through Python’s internal `dis` (disassembler) module, the bytecode layout resolves like this:
 
 ```text
-1           0 LOAD_NAME                0 (age)
+1             0 LOAD_NAME                0 (age)
               2 LOAD_CONST               0 (18)
               4 COMPARE_OP              74 (>=)
-             10 POP_JUMP_IF_FALSE        6 (to 24)
+              10 POP_JUMP_IF_FALSE        6 (to 24)
 
-2            12 LOAD_NAME                1 (print)
-             14 LOAD_CONST               1 ('You are eligible to vote')
-             16 CALL                     1
-             22 POP_TOP
-        >>   24 LOAD_CONST               2 (None)
-             26 RETURN_VALUE
+2             12 LOAD_NAME                1 (print)
+              14 LOAD_CONST               1 ('You are eligible to vote')
+              16 CALL                     1
+              22 POP_TOP
+         >>   24 LOAD_CONST               2 (None)
+              26 RETURN_VALUE
 ```
 
 **The Evaluation Flow Control Steps:**
@@ -140,6 +140,54 @@ Optimized Branching: Notice that there is no comparison instruction (`COMPARE_OP
              18 RETURN_VALUE
 ```
 
-The Compiler Shortcut: Look closely at instruction offset `2`. Instead of wasting cycles generating an explicit logical negation bytecode instruction (such as `UNARY_NOT`) followed by a secondary jump instruction, the CPython compiler optimizes the entire sequence into a single smart instruction: `POP_JUMP_IF_TRUE`.
+**The Compiler Shortcut:** Look closely at instruction offset `2`. Instead of wasting cycles generating an explicit logical negation bytecode instruction (such as `UNARY_NOT`) followed by a secondary jump instruction, the CPython compiler optimizes the entire sequence into a single smart instruction: `POP_JUMP_IF_TRUE`.
 
 Instead of explicitly calculating the inverse of the boolean and testing if that intermediate result is false, the VM reads the raw `False` state of `is_logged_in` directly from the stack. Because the state is `False`, `POP_JUMP_IF_TRUE` elects not to take the jump, allowing execution to naturally step straight into the indented print block located directly below it!
+
+### Example 3: Number Comparison (Introducing the else Fallback)
+```python
+temperature = 30
+if temperature > 25:
+    print("It's hot outside")
+else:
+    print("It's cool outside")
+```
+
+**Terminal Output:**
+```text
+It's hot outside
+```
+## Step-by-Step Breakdown:
+1. **Condition Evaluation:** The condition `temperature > 25` compares the value stored in the variable `temperature (30)` against the literal integer `25`.
+2. **True Path Execution:** Since $30 > 25$ is mathematically true, the expression yields the global Boolean singleton `True`. The `if` block triggers immediately, printing `"It's hot outside"`.
+3. **Skipping the Alternative:** Because the primary condition succeeded, the engine completely bypasses the `else` block fallback, preventing its internal code from executing.
+
+### 🧠 What's happening behind the scenes:
+When an `else` branch is added to a conditional structure, the CPython compiler must generate a way to exit the entire logical block cleanly after the `if` block finishes running. It accomplishes this by injecting an unconditional jump instruction (`JUMP_FORWARD` or `JUMP_BACKWARD`) right at the terminal tail of the true `if` block code execution array.
+
+Let’s dissect the disassembled bytecode for this `if-else` dual-branch layout:
+```text
+1            0 LOAD_NAME                 0 (temperature)
+             2 LOAD_CONST               0 (25)
+             4 COMPARE_OP              68 (>)
+             10 POP_JUMP_IF_FALSE        8 (to 28)
+
+  2          12 LOAD_NAME                1 (print)
+             14 LOAD_CONST               1 ("It's hot outside")
+             16 CALL                     1
+             22 POP_TOP
+             24 JUMP_FORWARD             7 (to 40)
+
+  4     >>   28 LOAD_NAME                1 (print)
+             30 LOAD_CONST               2 ("It's cool outside")
+             32 CALL                     1
+             38 POP_TOP
+        >>   40 LOAD_CONST               3 (None)
+             42 RETURN_VALUE
+```
+
+## The Dual-Branch Control Flow Steps:
+1. **The Conditional Split (`POP_JUMP_IF_FALSE`):** CPython loads `temperature` and `25`, runs the comparison instruction, and evaluates the stack state. If the condition evaluates to `False`, the instruction pointer jumps explicitly to offset `28`. This skips the hot-weather print block entirely and lands execution directly at the threshold of the `else` block logic.
+2. **The Success Escape Hatch (`JUMP_FORWARD`):** If the comparison is `True`, execution falls through linearly into the first print routine (offsets `12` to `22`). However, notice what happens at offset `24` right after the print call clears the stack: CPython executes a `JUMP_FORWARD` directly to offset `40`.
+- **Preventing Operational Collision:** Without that `JUMP_FORWARD` instruction, the CPU would blindly continue executing the next sequential lines of compiled bytecode in memory, meaning it would run the `if` block code and then immediately crash straight through into executing the alternative `else` block code right after it! The compiler injects `JUMP_FORWARD` as an essential safety gate to skip past the alternative branch once a valid path has been fully satisfied.
+   
