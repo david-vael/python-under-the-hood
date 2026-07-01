@@ -106,3 +106,40 @@ if not is_logged_in:
 ```
 
 The logical unary operator `not` completely reverses the Boolean value of the expression following it. Since `is_logged_in` is `False`, the expression not `is_logged_in` evaluates directly to `Tru`e. Because the resulting evaluation state is true, the indented branch executes perfectly, printing: `Please log in first`.
+
+### 🧠 What's happening behind the scenes:
+When evaluating bare Boolean flags or using logical operators like `not`, CPython completely optimizes the bytecode instructions away from standard binary comparisons (`COMPARE_OP`), relying instead on specialized, high-speed stack evaluation shortcuts.
+
+Let's dissect the disassembled bytecode for both variations to see this compiler optimization in action:
+
+## Variation A: Direct Boolean Check (`if is_logged_in:`)
+```text
+1             0 LOAD_NAME                0 (is_logged_in)
+              2 POP_JUMP_IF_FALSE        6 (to 16)
+
+2             4 LOAD_NAME                1 (print)
+              6 LOAD_CONST               0 ('Welcome back!')
+              8 CALL                     1
+              14 POP_TOP
+        >>   16 LOAD_CONST               1 (None)
+             18 RETURN_VALUE
+```
+
+Optimized Branching: Notice that there is no comparison instruction (`COMPARE_OP`) generated here. CPython loads the variable reference directly onto the evaluation stack via `LOAD_NAME` and immediately runs `POP_JUMP_IF_FALSE`. The virtual machine evaluates the raw truth value of the object sitting on the stack. If it is `True`, it falls straight through to the print block; if it is `False`, it modifies the frame instruction registry pointer to jump straight to offset `16`.
+
+## Variation B: The Inverted Logic Check (`if not is_logged_in:`)
+```text
+1             0 LOAD_NAME                0 (is_logged_in)
+              2 POP_JUMP_IF_TRUE         6 (to 16)
+
+2             4 LOAD_NAME                1 (print)
+              6 LOAD_CONST               0 ('Please log in first')
+              8 CALL                     1
+             14 POP_TOP
+        >>   16 LOAD_CONST               1 (None)
+             18 RETURN_VALUE
+```
+
+The Compiler Shortcut: Look closely at instruction offset `2`. Instead of wasting cycles generating an explicit logical negation bytecode instruction (such as `UNARY_NOT`) followed by a secondary jump instruction, the CPython compiler optimizes the entire sequence into a single smart instruction: `POP_JUMP_IF_TRUE`.
+
+Instead of explicitly calculating the inverse of the boolean and testing if that intermediate result is false, the VM reads the raw `False` state of `is_logged_in` directly from the stack. Because the state is `False`, `POP_JUMP_IF_TRUE` elects not to take the jump, allowing execution to naturally step straight into the indented print block located directly below it!
