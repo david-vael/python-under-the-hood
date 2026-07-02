@@ -10,6 +10,8 @@ Python is famously easy to write, but what happens behind the scenes when your c
 
 Whether you are looking to optimize your code, prepare for advanced technical interviews, or simply satisfy your curiosity about compilers and memory management, this guide is for you.
 
+### 📌 Note for Beginners: Sections labeled 🧠 What's happening behind the scenes are optional. They explore how CPython executes your code internally. If you're new to Python, feel free to skip them and come back later after you're comfortable with the language.
+
 ### 👤 About the Author
 I am a **contributing member of the Python Software Foundation (PSF)**. This repository and my upcoming full-length guide are born out of a passion for the Python ecosystem and a desire to make the complex internal architecture of CPython accessible to every developer.
 
