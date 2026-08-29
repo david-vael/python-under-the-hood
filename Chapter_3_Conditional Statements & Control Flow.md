@@ -528,9 +528,13 @@ else:
 
 ## Key Components:
 ○ `if`: The initial conditional boundary that begins the multi-branch evaluation chain.
+
 ○ `elif`: Additional conditional branches tested sequentially only if all preceding `if` or `elif` checks evaluated to `False`. You can chain as many `elif` blocks as necessary.
+
 ○ `else`: The optional default fallback block that executes if every preceding condition in the chain fails.
+
 ○ **Colons (`:`):** Required after every `if`, `elif`, and `else` declaration to denote the start of an indented block scope.
+
 ○ **Indentation:** Uniform indentation (standard 4 spaces) defines the extent of each branch's block suite.
 
 ## ⚙️ How It Works
@@ -600,6 +604,7 @@ Consider this three-branch structure disassembly:
 
 # Compiler-Level Branch Routing Mechanics:
 ○ **Cascade Jump Offsets:** Each failing condition jumps execution straight to the memory offset of the next `elif` condition check (e.g., offset `10` jumps to `28`, offset `38` jumps to `56`). Unnecessary bytecode comparisons are completely bypassed.
+
 ○ **Unified Exit Offsets (`JUMP_FORWARD`):** Every successful branch terminates with a `JUMP_FORWARD` instruction targeting the exact same instruction byte offset (`60`). This guarantees that once a branch succeeds, Python instantly jumps out of the entire conditional sequence without testing any subsequent bytecode comparisons or instructions.
 
 
