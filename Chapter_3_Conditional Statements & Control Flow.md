@@ -829,7 +829,93 @@ When evaluating numerical range boundaries using `<` or `>`, CPython sequentiall
 - **Matching Branch Execution:** At offset `56`, `25 < 60` evaluates to `True`. The VM falls through into offsets `68`-`72` to execute `print("Adult")`.
 - **Terminal Escape Hatch:** At offset `78`, `JUMP_FORWARD 2` leaps directly over the remaining fallback offset (`80`), landing at offset `84` to complete frame execution without evaluating any further instructions.
   
+### Example 4: Temperature Categories (Multi-Statement Branching)
+```python
+temp = 15
 
+if temp > 30:
+    print("It's hot")
+    print("Stay hydrated")
+elif temp > 20:
+    print("It's warm")
+    print("Perfect weather")
+elif temp > 10:
+    print("It's cool")
+    print("Bring a light jacket")
+else:
+    print("It's cold")
+    print("Wear warm clothes")
+```
+
+# Output
+```python
+It's cool
+Bring a light jacket
+```
+
+## Step-by-Step Breakdown
+- **Initial Evaluation (if):** Python checks `temp > 30` ($15 > 30$), which evaluates to `False`. The interpreter skips the `"It's hot"` block suite.
+- **First `elif` Evaluation:** Python moves to `temp > 20` ($15 > 20$), which also evaluates to `False`, skipping the `"It's warm"` block suite.
+- **Second `elif` Match:** Python checks `temp > 10` ($15 > 10$). Because `15` is strictly greater than `10`, this evaluates to `True`.
+- **Block Execution & Exit:** Both statements inside this `elif` suite execute sequentially, printing `"It's cool"` followed by `"Bring a light jacket"`. Python then immediately exits the conditional structure, skipping the fallback `else` block entirely.
+
+## 🧠 What's happening behind the scenes:
+When an `elif` suite contains multiple statements, CPython groups all corresponding bytecodes sequentially. Once the final instruction in the matching block finishes, the VM issues a single `JUMP_FORWARD` to bypass all downstream branches.
+
+# Disassembled Bytecode Layout
+```text
+1           0 LOAD_NAME                0 (temp)
+              2 LOAD_CONST               0 (30)
+              4 COMPARE_OP              68 (>)
+             10 POP_JUMP_IF_FALSE       14 (to 36)
+
+  2          12 LOAD_NAME                1 (print)
+             14 LOAD_CONST               1 ("It's hot")
+             16 CALL                     1
+             22 POP_TOP
+  3          24 LOAD_NAME                1 (print)
+             26 LOAD_CONST               2 ('Stay hydrated')
+             28 CALL                     1
+             34 JUMP_FORWARD            45 (to 122) <-- Exit Hatch
+
+  4     >>   36 LOAD_NAME                0 (temp)
+             38 LOAD_CONST               3 (20)
+             40 COMPARE_OP              68 (>)
+             46 POP_JUMP_IF_FALSE       14 (to 72)
+
+  5          48 LOAD_NAME                1 (print)
+             50 LOAD_CONST               4 ("It's warm")
+             52 CALL                     1
+             58 POP_TOP
+  6          60 LOAD_NAME                1 (print)
+             62 LOAD_CONST               5 ('Perfect weather')
+             64 CALL                     1
+             70 JUMP_FORWARD            27 (to 122) <-- Exit Hatch
+
+  7     >>   72 LOAD_NAME                0 (temp)
+             74 LOAD_CONST               6 (10)
+             76 COMPARE_OP              68 (>)
+             82 POP_JUMP_IF_FALSE       13 (to 106)
+
+  8          84 LOAD_NAME                1 (print)
+             86 LOAD_CONST               7 ("It's cool")
+             88 CALL                     1
+             94 POP_TOP
+  9          96 LOAD_NAME                1 (print)
+             98 LOAD_CONST               8 ('Bring a light jacket')
+            100 CALL                     1
+            104 JUMP_FORWARD             8 (to 122) <-- Exit Hatch
+
+ 11    >>   106 LOAD_NAME                1 (print)
+            108 ... [Else block execution lines 11 & 12] ...
+       >>   122 LOAD_CONST               9 (None)
+            124 RETURN_VALUE
+```
+
+## Low-Level Multi-Statement Routing Mechanics
+- **Sequential Branch Skipping:** Offset `10` jumps to `36` upon failure of the first `if`. Offset `46` jumps to `72` upon failure of the first `elif`.
+- **Execution Fall-Through:** At offset `76`, $15 > 10$ returns True. Execution falls through into offsets `84`–`100`, executing both `print` function calls sequentially on the frame stack.
+- **Clean Terminal Exit:** Right after the second print call completes at offset `100`, instruction offset `104` executes `JUMP_FORWARD 8`. This leaps straight over the fallback `else` bytecode block (offsets `106`-`120`), landing at offset `122` to complete frame execution cleanly.
 
 
 
