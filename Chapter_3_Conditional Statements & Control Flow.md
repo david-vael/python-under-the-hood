@@ -1229,8 +1229,104 @@ dis.dis(get_day, show_offsets=True)
             306 RETURN_VALUE
 ```
 
+## Level 3 - Evaluation Machinery (How CPython 3.14.7 Executes It)
+**Instruction Flow Analysis:**
+1. **First Comparison (`day == 1`):** `LOAD_FAST_BORROW` pushes parameter `day` (value `3`), `LOAD_SMALL_INT` pushes `1`, and `COMPARE_OP 88` evaluates equality (`False`).
+2. **Branch Jump:** `POP_JUMP_IF_FALSE` sees `False` and transfers execution directly to target label `L1` (offset `42`).
+3. **Second Comparison (`day == 2`):** At offset `42`, `day` (`3`) is compared to `2` (`False`), jumping to label `L2` (offset `82`).
+4. **Matching Comparison (`day == 3`):** At offset `82`, `day` (`3`) is compared to `3` (`True`). `POP_JUMP_IF_FALSE` does not jump and falls through to `NOT_TAKEN`.
+5. **Execution & Direct Return:** At offset `120`, `RETURN_VALUE` terminates frame evaluation immediately after `print("Wednesday")` completes, bypassing labels `L3` through `L7`.
 
+# Step-by-Step VM Execution Path Trace (`day = 3`)
+```text
+[offset 0..10]   day == 1 (False) ──> POP_JUMP_IF_FALSE ──> Jump to L1 (offset 42)
+[offset 42..50]  day == 2 (False) ──> POP_JUMP_IF_FALSE ──> Jump to L2 (offset 82)
+[offset 82..90]  day == 3 (True)  ──> POP_JUMP_IF_FALSE ──> Fallthrough to NOT_TAKEN
+[offset 96..120] LOAD_GLOBAL (print) ──> CALL ──> RETURN_VALUE (Exit at offset 120)
+```
+On this execution path, instruction offsets 122 through 306 are never reached by the evaluation loop.\
 
+## Level 4 - Systems Architecture & Production Engineering
+When mapping a discrete value across many branches, structural alternatives can provide clearer organization and, depending on the workload, different performance characteristics. Performance should be established through measurement for the specific workload rather than inferred solely from asymptotic complexity.
+
+1. **Dictionary Dispatch ($O(1)$ Average-Case Lookup):** For discrete value mapping, a dictionary provides average-case constant-time key lookup rather than evaluating a sequence of equality conditions:
+```python
+DAYS = {
+    1: "Monday", 2: "Tuesday", 3: "Wednesday",
+    4: "Thursday", 5: "Friday", 6: "Saturday", 7: "Sunday"
+}
+print(DAYS.get(day, "Invalid day number"))
+```
+
+2. **Pattern Matching (`match-case`, Python 3.10+):**
+Structural pattern matching provides cleaner control flow syntax for value matching while allowing compound pattern extraction and guard conditions:
+
+```python
+match day:
+    case 1: print("Monday")
+    case 2: print("Tuesday")
+    case 3: print("Wednesday")
+    case 4: print("Thursday")
+    case 5: print("Friday")
+    case 6: print("Saturday")
+    case 7: print("Sunday")
+    case _: print("Invalid day number")
+```
+
+### Applied Engineering: When to Use `if-elif-else`
+While lower level bytecode analysis reveals the mechanics of sequential evaluation, high-level code structure determines readability, maintainability, and baseline execution pathways. An `if-elif-else` control structure is the standard language primitive for multi-branch conditional logic when choices are **mutually exclusive** and must be evaluated in a **predetermined order**.
+
+## Level 1 - Language Semantics & Application Patterns
+# 1. Mutually Exclusive Branch Selection
+Use `if-elif-else` when domain logic requires at most one branch from several mutually exclusive possibilities to execute, with `else` providing an optional fallback. The semantic contract of `elif` guarantees that once a preceding condition evaluates to `True`, all subsequent conditions are completely ignored.
+```python
+# Range-based categorization (Mutually Exclusive)
+score = 85
+
+if score >= 90:
+    grade = "A"
+elif score >= 80:
+    grade = "B"
+elif score >= 70:
+    grade = "C"
+else:
+    grade = "F"
+```
+
+# 2. Priority-Ordered Evaluation
+Because evaluation proceeds top-to-bottom, place conditions according to the domain's required priority or specificity. When correctness permits equivalent ordering, frequently matched conditions can be placed earlier to reduce the average number of checks. This ensures that broader or lower-priority catch all conditions do not shadow specialized handling.
+
+```python
+# Specific conditions precede general fallbacks
+user_role = "admin"
+is_suspended = False
+
+if is_suspended:
+    access_level = "Deny All"
+elif user_role == "admin":
+    access_level = "Full System Access"
+elif user_role == "editor":
+    access_level = "Write Access"
+else:
+    access_level = "Read-Only Access"
+```
+
+# 3. Short-Circuiting Efficiency for Non-Discrete Logic
+For range checks, ordered thresholds, or complex boolean expressions where the decision depends directly on evaluating conditions, an `if-elif-else` chain provides natural short-circuit evaluation: once a condition evaluates to `True`, the remaining conditions are not evaluated.
+
+## Level 2 - Architectural & Decision Matrix
+To determine whether an `if-elif-else` cascade is the optimal choice for a given module, evaluate it against structural alternatives:
+
+| Dispatch Pattern | Best Suited For | Primary Advantage | Complexity / Evaluation Structure |
+| :--- | :--- | :--- | :--- |
+| `if-elif-else` **Cascade** | Ranges, continuous variables (`>`, `<`, `>=`), priority rules, complex boolean expressions | Flexible conditions and explicit priority ordering | O(N) worst-case conditional checks |
+| **Dictionary Mapping** | Discrete key-to-value or key-to-callable mapping | Average-case constant-time key lookup and data-driven organization | O(1) average-case lookup |
+| `match-case` **(Python 3.10+)** | Structural patterns, value matching, destructuring, guards | Clear structural matching and pattern extraction | Pattern-dependent; implementation-specific |
+
+## Level 3 - Production Engineering Guidelines
+1. **Respect Correctness Before Frequency:** Order conditions according to the domain's required priority or specificity. When multiple orderings are semantically equivalent, placing frequently matched conditions earlier can reduce the average number of conditional checks.
+2. **Refactor Large or Complex Cascades:** Large or frequently modified `if-elif` chains can signal an opportunity to refactor into a data-driven dispatch table, strategy object, or another abstraction-especially when branches primarily map discrete keys to actions.
+3. **Avoid Redundant Logic:** Do not unnecessarily re-test facts already established by earlier conditions. For example, if `score >= 90` failed, then within the subsequent `elif score >= 80` branch, `score < 90` is already known.
 
 
 
