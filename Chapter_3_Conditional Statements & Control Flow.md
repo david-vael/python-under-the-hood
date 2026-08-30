@@ -2111,9 +2111,11 @@ While complete `if-else` nesting is effective for procedural workflows with dist
 | **Flattened Guards** | Inverted check + `return` / `raise` | Eliminates nesting depth; maintains single happy-path baseline. | Public API functions, domain service methods, validation pipelines. |
 
 
+### Deeply Nested Decision Trees & Refactoring Strategies
+As decision logic expands, if statements can be nested multiple levels deep. While deep nesting creates a fine-grained, step-by-step validation chain, it introduces significant structural overhead—often referred to as the "Pyramid of Doom". As nesting depth increases, cognitive complexity and the mental effort required to track active conditions can increase substantially.
 
 
-
+#### TAKING FEW HOURS BREAK
 
 
 
