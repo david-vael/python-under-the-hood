@@ -2102,7 +2102,7 @@ NAMES TABLE: verify_access_full.__code__.co_names
 ```
 
 ## Level 4 - Systems Architecture & Production Engineering
-While complete `if-else` nesting is effective for procedural workflows with distinct side-effects (such as granular logging), function-level business logic often refactors deep alternative branches into guard clauses (early exit returns or raised exceptions) to minimize cyclomatic complexity.
+While complete `if-else` nesting is effective for procedural workflows with distinct side-effects (such as granular logging), function-level business logic often refactors deep alternative branches into guard clauses (early exit returns or raised exceptions) to reduce nesting depth and cognitive complexity.
 
 # Comparison Matrix: Decision Tree Structures
 | Pattern | Control Structure | Primary Advantage | Typical Scope |
