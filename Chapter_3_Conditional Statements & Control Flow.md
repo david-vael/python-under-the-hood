@@ -1059,7 +1059,175 @@ On this execution path, instruction offsets 42 through 124 are never reached by 
 - **Alternative Evaluation Structures:** When evaluating discrete values across expansive conditional logic, Python 3.10+ `match-case` pattern matching or dictionary dispatch tables can provide cleaner separation than deep `if-elif-else` chains.
 - **Static Analysis Limits:** Static analysis tools such as Ruff and Pylint can detect certain unreachable or redundant code patterns, but they cannot generally determine whether the ordering of application-specific conditions expresses the programmer's intended logic.
 
+### Discrete Value Dispatch Mechanics
+When handling discrete value mapping—such as converting an integer into a day of the week an `if–elif–else` chain evaluates conditions sequentially from top to bottom. As the number of branches grows, the number of conditional checks required in the worst case grows linearly with the number of conditions, highlighting the structural difference between a branch cascade and alternative dispatch mechanisms.
 
+## Level 1 — Language Semantics (What Python Specifies)
+**Sequential Equality Matching**
+```python
+day = 3
+
+if day == 1:
+    print("Monday")
+elif day == 2:
+    print("Tuesday")
+elif day == 3:
+    print("Wednesday")
+elif day == 4:
+    print("Thursday")
+elif day == 5:
+    print("Friday")
+elif day == 6:
+    print("Saturday")
+elif day == 7:
+    print("Sunday")
+else:
+    print("Invalid day number")
+```
+
+# Output
+```text
+Wednesday
+```
+
+# Evaluation Semantics:
+An `if-elif-else` cascade checks conditions sequentially. For `day = 3`, Python checks `day == 1` (`False`), then `day == 2` (`False`), then `day == 3` (`True`). Once a condition evaluates to `True`, Python executes that branch's suite and bypasses all remaining `elif` and `else` blocks.
+
+## Level 2 - Compilation / Bytecode (How CPython 3.14.7 Represents It)
+> **🧪 Implementation Note — CPython 3.14.7 Bytecode Characteristics**
+>Bytecode shown in this section is an empirical snapshot of CPython 3.14.7 and should not be treated as part of Python's language specification. CPython 3.14.7 exhibits several bytecode characteristics relevant to this example:
+> 1. `LOAD_FAST_BORROW:` Pushes a reference to a local variable onto the evaluation stack using borrowed-reference semantics, avoiding an unnecessary reference-count increment for this stack reference.
+> 2. `LOAD_SMALL_INT:` Pushes small integer values (in the 0-255 range) directly onto the stack, avoiding a `co_consts` lookup for the integer literal.
+> 3. `COMPARE_OP 88 (bool(==)):` In this CPython 3.14.7 build, the disassembler displays opcode argument 88 as `bool(==)`, indicating equality comparison with boolean-result handling (`oparg & 16`).
+> 4. `NOT_TAKEN:` An instrumented no-op used by CPython's branch monitoring machinery. It participates in recording branch events exposed through `sys.monitoring`.
+> 5. **Linear Conditional-Branch Chain:** An `if-elif` chain compiles into a linear sequence of conditional branches. Each failed comparison transfers control via `POP_JUMP_IF_FALSE` to the next test label until a condition matches or execution reaches the default `else` suite.
+
+# Empirical Function Disassembly
+```python
+import dis
+
+def get_day(day):
+    if day == 1:
+        print("Monday")
+    elif day == 2:
+        print("Tuesday")
+    elif day == 3:
+        print("Wednesday")
+    elif day == 4:
+        print("Thursday")
+    elif day == 5:
+        print("Friday")
+    elif day == 6:
+        print("Saturday")
+    elif day == 7:
+        print("Sunday")
+    else:
+        print("Invalid day number")
+
+dis.dis(get_day, show_offsets=True)
+```
+
+```text
+3           0 RESUME                   0
+
+  4           2 LOAD_FAST_BORROW         0 (day)
+              4 LOAD_SMALL_INT           1
+              6 COMPARE_OP              88 (bool(==))
+             10 POP_JUMP_IF_FALSE       14 (to L1)
+             14 NOT_TAKEN
+
+  5          16 LOAD_GLOBAL              1 (print + NULL)
+             26 LOAD_CONST               1 ('Monday')
+             28 CALL                     1
+             36 POP_TOP
+             38 LOAD_CONST               9 (None)
+             40 RETURN_VALUE
+
+  6     L1:  42 LOAD_FAST_BORROW         0 (day)
+             44 LOAD_SMALL_INT           2
+             46 COMPARE_OP              88 (bool(==))
+             50 POP_JUMP_IF_FALSE       14 (to L2)
+             54 NOT_TAKEN
+
+  7          56 LOAD_GLOBAL              1 (print + NULL)
+             66 LOAD_CONST               2 ('Tuesday')
+             68 CALL                     1
+             76 POP_TOP
+             78 LOAD_CONST               9 (None)
+             80 RETURN_VALUE
+
+  8     L2:  82 LOAD_FAST_BORROW         0 (day)
+             84 LOAD_SMALL_INT           3
+             86 COMPARE_OP              88 (bool(==))
+             90 POP_JUMP_IF_FALSE       14 (to L3)
+             94 NOT_TAKEN
+
+  9          96 LOAD_GLOBAL              1 (print + NULL)
+            106 LOAD_CONST               3 ('Wednesday')
+            108 CALL                     1
+            116 POP_TOP
+            118 LOAD_CONST               9 (None)
+            120 RETURN_VALUE
+
+ 10     L3: 122 LOAD_FAST_BORROW         0 (day)
+            124 LOAD_SMALL_INT           4
+            126 COMPARE_OP              88 (bool(==))
+            130 POP_JUMP_IF_FALSE       14 (to L4)
+            134 NOT_TAKEN
+
+ 11         136 LOAD_GLOBAL              1 (print + NULL)
+            146 LOAD_CONST               4 ('Thursday')
+            148 CALL                     1
+            156 POP_TOP
+            158 LOAD_CONST               9 (None)
+            160 RETURN_VALUE
+
+ 12     L4: 162 LOAD_FAST_BORROW         0 (day)
+            164 LOAD_SMALL_INT           5
+            166 COMPARE_OP              88 (bool(==))
+            170 POP_JUMP_IF_FALSE       14 (to L5)
+            174 NOT_TAKEN
+
+ 13         176 LOAD_GLOBAL              1 (print + NULL)
+            186 LOAD_CONST               5 ('Friday')
+            188 CALL                     1
+            196 POP_TOP
+            198 LOAD_CONST               9 (None)
+            200 RETURN_VALUE
+
+ 14     L5: 202 LOAD_FAST_BORROW         0 (day)
+            204 LOAD_SMALL_INT           6
+            206 COMPARE_OP              88 (bool(==))
+            210 POP_JUMP_IF_FALSE       14 (to L6)
+            214 NOT_TAKEN
+
+ 15         216 LOAD_GLOBAL              1 (print + NULL)
+            226 LOAD_CONST               6 ('Saturday')
+            228 CALL                     1
+            236 POP_TOP
+            238 LOAD_CONST               9 (None)
+            240 RETURN_VALUE
+
+ 16     L6: 242 LOAD_FAST_BORROW         0 (day)
+            244 LOAD_SMALL_INT           7
+            246 COMPARE_OP              88 (bool(==))
+            250 POP_JUMP_IF_FALSE       14 (to L7)
+            254 NOT_TAKEN
+
+ 17         256 LOAD_GLOBAL              1 (print + NULL)
+            266 LOAD_CONST               7 ('Sunday')
+            268 CALL                     1
+            276 POP_TOP
+            278 LOAD_CONST               9 (None)
+            280 RETURN_VALUE
+
+ 19     L7: 282 LOAD_GLOBAL              1 (print + NULL)
+            292 LOAD_CONST               8 ('Invalid day number')
+            294 CALL                     1
+            302 POP_TOP
+            304 LOAD_CONST               9 (None)
+            306 RETURN_VALUE
+```
 
 
 
