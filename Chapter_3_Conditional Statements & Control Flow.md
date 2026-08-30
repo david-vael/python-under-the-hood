@@ -1649,7 +1649,7 @@ Summer
 >
 > Bytecode shown in this section is an empirical snapshot of CPython 3.14.7. Opcode names (such as `CONTAINS_OP`), offsets, and argument bindings are internal implementation details.
 
-## Disassembly: Complete Discrete Set Membership (detect_season)
+## Disassembly: Complete Discrete Set Membership (`detect_season`)
 ```python
 import dis
 
@@ -1669,70 +1669,75 @@ dis.dis(detect_season, show_offsets=True)
 ```
 
 ```text
-10           0 RESUME                   0
+42           0 RESUME                   0
 
- 11           2 LOAD_FAST_BORROW         0 (month)
-              4 LOAD_CONST               1 ((12, 1, 2))
+ 43           2 LOAD_FAST_BORROW         0 (month)
+              4 LOAD_CONST               7 ((12, 1, 2))
               6 CONTAINS_OP              0 (in)
              10 POP_JUMP_IF_FALSE       14 (to L1)
              14 NOT_TAKEN
 
- 12          16 LOAD_GLOBAL              1 (print + NULL)
-             26 LOAD_CONST               2 ('Winter')
+ 44          16 LOAD_GLOBAL              1 (print + NULL)
+             26 LOAD_CONST               1 ('Winter')
              28 CALL                     1
              36 POP_TOP
-             38 LOAD_CONST               0 (None)
+             38 LOAD_CONST               6 (None)
              40 RETURN_VALUE
 
- 13     L1:  42 LOAD_FAST_BORROW         0 (month)
-             44 LOAD_CONST               3 ((3, 4, 5))
+ 45     L1:  42 LOAD_FAST_BORROW         0 (month)
+             44 LOAD_CONST               8 ((3, 4, 5))
              46 CONTAINS_OP              0 (in)
              50 POP_JUMP_IF_FALSE       14 (to L2)
              54 NOT_TAKEN
 
- 14          56 LOAD_GLOBAL              1 (print + NULL)
-             66 LOAD_CONST               4 ('Spring')
+ 46          56 LOAD_GLOBAL              1 (print + NULL)
+             66 LOAD_CONST               2 ('Spring')
              68 CALL                     1
              76 POP_TOP
-             78 LOAD_CONST               0 (None)
+             78 LOAD_CONST               6 (None)
              80 RETURN_VALUE
 
- 15     L2:  82 LOAD_FAST_BORROW         0 (month)
-             84 LOAD_CONST               5 ((6, 7, 8))
+ 47     L2:  82 LOAD_FAST_BORROW         0 (month)
+             84 LOAD_CONST               9 ((6, 7, 8))
              86 CONTAINS_OP              0 (in)
              90 POP_JUMP_IF_FALSE       14 (to L3)
              94 NOT_TAKEN
 
- 16          96 LOAD_GLOBAL              1 (print + NULL)
-             106 LOAD_CONST              6 ('Summer')
+ 48          96 LOAD_GLOBAL              1 (print + NULL)
+             106 LOAD_CONST              3 ('Summer')
              108 CALL                    1
              116 POP_TOP
-             118 LOAD_CONST              0 (None)
+             118 LOAD_CONST              6 (None)
              120 RETURN_VALUE
 
- 17     L3:  122 LOAD_FAST_BORROW        0 (month)
-             124 LOAD_CONST              7 ((9, 10, 11))
+ 49     L3:  122 LOAD_FAST_BORROW        0 (month)
+             124 LOAD_CONST              10 ((9, 10, 11))
              126 CONTAINS_OP             0 (in)
              130 POP_JUMP_IF_FALSE      14 (to L4)
              134 NOT_TAKEN
 
- 18          136 LOAD_GLOBAL             1 (print + NULL)
-             146 LOAD_CONST              8 ('Fall')
+ 50          136 LOAD_GLOBAL             1 (print + NULL)
+             146 LOAD_CONST              4 ('Fall')
              148 CALL                    1
              156 POP_TOP
-             158 LOAD_CONST              0 (None)
+             158 LOAD_CONST              6 (None)
              160 RETURN_VALUE
 
- 20     L4:  162 LOAD_GLOBAL             1 (print + NULL)
-             172 LOAD_CONST              9 ('Invalid month')
+ 52     L4:  162 LOAD_GLOBAL             1 (print + NULL)
+             172 LOAD_CONST              5 ('Invalid month')
              174 CALL                    1
              182 POP_TOP
-             184 LOAD_CONST              0 (None)
+             184 LOAD_CONST              6 (None)
              186 RETURN_VALUE
 ```
 
+```text
+CONSTANT TABLE: detect_season.__code__.co_consts
+(12, 'Winter', 'Spring', 'Summer', 'Fall', 'Invalid month', None, (12, 1, 2), (3, 4, 5), (6, 7, 8), (9, 10, 11))
+```
+
 # Bytecode Analysis:
-- **Constant-Folding Optimization:** When the compiler encounters a membership test against a literal list containing only constants, CPython compiles that expression using an immutable tuple constant instead of constructing a list object at runtime. In the observed bytecode, `[12, 1, 2]` appears directly as the constant tuple `(12, 1, 2)` at offset 4.
+- **Constant-Folding Optimization:** For a membership test against a literal collection of constants, CPython's compiler emits an immutable tuple constant in the observed bytecode rather than constructing the list at runtime. As confirmed by `co_consts`, `[12, 1, 2]` appears directly as constant `(12, 1, 2)` at offset 4.
 - **Membership Opcode (`CONTAINS_OP`):** Evaluates whether `month` is present inside the constant tuple. If `False`, `POP_JUMP_IF_FALSE` skips the branch suite and jumps directly to the next condition's offset (`L1`, `L2`, etc.).
 
 
@@ -1740,10 +1745,10 @@ dis.dis(detect_season, show_offsets=True)
 **Continuous Range Execution Trace (`temperature = 22.5`)**
 ```text
 [offset 0..4]   temperature < 10.0  ──> False
-[jump to L1]    Fallthrough to next test
-[offset 6..10]  temperature < 25.0  ──> True
-[offset 12..16] Execute print("Moderate")
-[offset 18..20] Bypasses all subsequent elif/else blocks ──> Frame Exit
+[jump to L1]    Fallthrough to next test (offset 42)
+[offset 42..46] temperature < 25.0  ──> True
+[offset 56..76] Execute print("Moderate")
+[offset 78..80] LOAD_CONST None ──> RETURN_VALUE (Exits Frame; L2/L3 never reached)
 ```
 
 # Set Membership Execution Trace (`month = 8`)
@@ -1766,8 +1771,8 @@ dis.dis(detect_season, show_offsets=True)
 | Pattern | Primary Use Case | Key Optimization / Cleanliness Benefit |
 | :--- | :--- | :--- |
 | **Continuous Ranges** | Numeric classification (temperature, age, salaries). | Eliminates redundant lower-bound comparisons. |
-| **Threshold Tiers** | Scoring, password security, SLA alerts. | Evaluates sequentially from tightest to widest thresholds. |
-| **Set Membership** | Category groupings (months, status codes). | CPython compiler folds literal collections into constant tuples. |
+| **Threshold Tiers** | Scoring, password security, SLA alerts. | Evaluates ordered thresholds sequentially. |
+| **Set Membership** | Category groupings (months, status codes). | Literal constant collections can be emitted as tuple constants. |
 
 
 
