@@ -1,4 +1,3 @@
-> ⚠️ **Under Development:** This chapter is currently being written and compiled. Code snippets, explanations, and under-the-hood deep dives are subject to active updates.
 
 © 2026 David Vael | Licensed under CC-BY 4.0
 ### The `if` Statement in Python
