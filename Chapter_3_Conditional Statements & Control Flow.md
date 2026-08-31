@@ -2804,7 +2804,7 @@ The conditional expression evaluates a condition inline and yields one of two ex
 
 **Grammar & Syntax Specification**
 ```text
-value_if_true if condition else value_if_fals
+value_if_true if condition else value_if_false
 ```
 
 ### Evaluation Sequence:
@@ -2989,7 +2989,7 @@ co_varnames identical: True
 ```
 
 ### Bytecode Equivalence Analysis:
-- **Structural Opcode Identity:** CPython compiles both the conditional expression (`"Adult" if age >= 18 else "Minor"`) and the multi-line statement block into identical bytecode streams. Different source-level syntax does not necessarily imply different CPython bytecode.
+- **Structural Opcode Identity:** In this CPython 3.14.7 snapshot, the compiler produces identical bytecode streams for both the conditional expression ("Adult" if age >= 18 else "Minor") and the equivalent multi-line statement block. Different source-level syntax does not necessarily imply different CPython bytecode.
 - **VM Jump Optimization:** Both implementations evaluate `COMPARE_OP` at offset 6. If `False`, control branches to label `L1` (offset 20) via `POP_JUMP_IF_FALSE`. If `True`, control loads `'Adult'` directly into the evaluation stack and returns without ever reading `'Minor'` into stack memory.
 
 
@@ -2998,7 +2998,7 @@ co_varnames identical: True
 ```text
 [offset 2..6]    age >= 18 (20 >= 18)        ──> True  ──> Fallthrough
 [offset 16..18]  LOAD_CONST 'Adult'           ──> RETURN_VALUE (Exits frame immediately)
-[offset 20..22]  LOAD_CONST 'Minor'           ──> SKIPPED (Never evaluated or loaded into stack)
+[offset 20..22]  LOAD_CONST 'Minor'           ──> SKIPPED (LOAD_CONST is never executed)
 ```
 
 ### Case B: Evaluation Trace (`age = 16`)
@@ -3018,7 +3018,7 @@ co_varnames identical: True
 | **Expression Embedding** | Illegal (Cannot sit inside `print()`, `return`, or math). | Legal (Usable anywhere expressions are valid). | Illegal. |
 | **Side-Effect Support** | High (Supports multiple internal statements per suite). | Limited; each selected branch contains a single expression, although that expression may itself invoke side-effecting operations. | High (Supports multiple statements per branch suite). |
 | **Readability Horizon** | Complex branching logic; multi-statement blocks. | Single-condition inline binary selection. | Multi-factor decision trees; consider dicts/`match` for large N. |
-| **CPython VM Overhead** | Identical bytecode to single-line ternary expressions. | Identical bytecode to full `if-else` statements. | Worst-case evaluation is linear in tested branches. |
+| **CPython VM Overhead** | Can produce bytecode identical to an equivalent conditional expression when both express the same control flow. | Identical bytecode to the equivalent `if-else` return form in this CPython 3.14.7 snapshot. | Worst-case evaluation is linear in tested branches. |
 
 
 
