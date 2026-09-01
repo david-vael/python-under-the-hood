@@ -24,7 +24,7 @@ Current Progress:
 ✅ Chapter 3 – Conditional Statements & Control Flow
 
 Currently Working On:
-🔄 Next chapter in development
+# I’m taking a break from Python Under the Hood. I’ll be stepping away from the project for a while and will return to it before July 2027.
 
 This handbook is developed iteratively. Topics and chapter order may evolve as the project grows and community feedback is incorporated.
 
