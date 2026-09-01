@@ -917,13 +917,13 @@ When an `elif` suite contains multiple statements, CPython groups all correspond
 - **Clean Terminal Exit:** Right after the second print call completes at offset `100`, instruction offset `104` executes `JUMP_FORWARD 8`. This leaps straight over the fallback `else` bytecode block (offsets `106`-`120`), landing at offset `122` to complete frame execution cleanly.
 
 > [!NOTE]
-> From here on, I'm using an updated explanation style suggested by my close friends Emily and Charlotte. 
-> Please go to our GitHub Discussions tab to vote on which style you prefer!
+> **From here on, I'm using an updated explanation style suggested by my close friends Emily and Charlotte.** 
+> **Please go to our GitHub Discussions tab to vote on which style you prefer!**
 
 # Branch Ordering & Compiler Execution Mechanics
 Evaluating conditions in an `if-elif-else` chain requires precise arrangement when dealing with overlapping ranges. Because Python evaluates the conditions of an `if-elif` chain sequentially from top to bottom, improper ordering can create logic traps where broad conditions preempt more restrictive ones.
 
-## Level 1 — Language Semantics (What Python Specifies)
+## Level 1 - Language Semantics (What Python Specifies)
 **Incorrect Order (Premature Branch Match)**
 ```python
 score = 95
@@ -962,8 +962,8 @@ Grade A
 
 Python evaluates the `if` condition first, followed by each `elif` condition in sequence as necessary; exactly one suite-the first whose condition is true-is executed. For overlapping lower-bound conditions such as `score >= threshold`, placing the highest numerical threshold first is an application-level ordering rule that prevents broader conditions from matching prematurely.
 
-## Level 2 — Compilation / Bytecode (How CPython 3.14.7 Represents It)
-   > 🧪 **Implementation Note — CPython 3.14.7 Bytecode Characteristics**
+## Level 2 - Compilation / Bytecode (How CPython 3.14.7 Represents It)
+   > 🧪 **Implementation Note - CPython 3.14.7 Bytecode Characteristics**
    >
    > Bytecode shown in this section is an empirical snapshot of CPython 3.14.7 and should not be treated as part of Python's language specification. CPython 3.14.7 exhibits several bytecode characteristics relevant to this example:
    > 1. `LOAD_FAST_BORROW`: Pushes a reference to a local variable onto the evaluation stack using borrowed reference semantics, avoiding reference-counting overhead during short-lived stack operations.
