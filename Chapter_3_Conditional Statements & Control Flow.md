@@ -1,6 +1,6 @@
 
 © 2026 David Vael | Licensed under CC-BY 4.0
-### The `if` Statement in Python
+# The `if` Statement in Python
 The `if` statement is one of the most fundamental building blocks of programming in Python. It allows your program to make decisions and execute specific code blocks only when certain conditions are met a concept known as **conditional execution** or **control flow**. Without conditional statements, software would be entirely linear and rigid, running the exact same way every time without any ability to respond to varying inputs or states.
 
 ### 📋 Basic Syntax
@@ -453,7 +453,7 @@ if age >= 18:
     print("You can vote")
 print("Program continues")
 ```
-# Structural Behavior:
+### Structural Behavior:
 - **The Logic Flow:** The condition `age >= 18` evaluates whether $16 \ge 18$, yielding `False`.
 - **Execution Path:** Because the condition fails, CPython immediately shifts its internal instruction registry pointer to hop over the indented `print` block.
 - **The Result:** Nothing prints regarding voting rights. Execution drops directly into the parent block scope, immediately processing the next line to display: `Program continues`.
@@ -467,7 +467,7 @@ else:
     print("You are underage")
 print("Program continues")
 ```
-# Structural Behavior:
+### Structural Behavior:
 - **The Logic Flow:** The primary condition still evaluates to `False`.
 - **Execution Path:** Instead of dropping straight into the parent scope, the virtual machine handles the failure defensively by routing the execution branch directly into the alternative `else` suite. Once the `else` block completes, it exits the structural boundary.
 - **The Result:** The application explicitly provides fallback feedback by printing `You are underage`, followed immediately by the subsequent non-indented instruction: `Program continues`.
@@ -509,7 +509,7 @@ Comparing the compilation layout reveals how CPython alters its bytecode branchi
 ### The `if - elif - else` Statement in Python
 When you need to evaluate multiple conditions and handle more than two possible outcomes, the `if - elif - else` structure provides a clean, sequential decision chain. Instead of executing multiple independent `if` checks, using `elif` (short for "else if") allows Python to test conditions sequentially and exit the control structure as soon as a match is found.
 
-# 📋 Basic Syntax
+### 📋 Basic Syntax
 ```python
 if condition1:
     # Code block 1
@@ -601,7 +601,7 @@ Consider this three-branch structure disassembly:
              62 RETURN_VALUE
 ```
 
-# Compiler-Level Branch Routing Mechanics:
+### Compiler-Level Branch Routing Mechanics:
 ○ **Cascade Jump Offsets:** Each failing condition jumps execution straight to the memory offset of the next `elif` condition check (e.g., offset `10` jumps to `28`, offset `38` jumps to `56`). Unnecessary bytecode comparisons are completely bypassed.
 
 ○ **Unified Exit Offsets (`JUMP_FORWARD`):** Every successful branch terminates with a `JUMP_FORWARD` instruction targeting the exact same instruction byte offset (`60`). This guarantees that once a branch succeeds, Python instantly jumps out of the entire conditional sequence without testing any subsequent bytecode comparisons or instructions.
@@ -634,7 +634,7 @@ Grade B
 ## 🧠 What's happening behind the scenes:
 When executing a multi-branch `elif` chain, CPython enforces short-circuiting at the bytecode level by binding each successful branch execution to a shared escape hatch at the very end of the structure.
 
-# Disassembled Bytecode Layout
+### Disassembled Bytecode Layout
 ```text
 1           0 LOAD_NAME                0 (score)
               2 LOAD_CONST               0 (90)
@@ -674,7 +674,7 @@ When executing a multi-branch `elif` chain, CPython enforces short-circuiting at
              86 RETURN_VALUE
 ```
 
-# The Internal Short-Circuit Pipeline
+### The Internal Short-Circuit Pipeline
 - **Linear Cascade on `False`:** When `score >= 90` fails at offset `4`, `POP_JUMP_IF_FALSE` routes execution directly to offset `28` to start evaluating `score >= 70`.
 - **Execution of the Matching Branch:** At offset `32`, $75 \ge 70$ evaluates to `True`. The instruction pointer falls straight into offsets `40`-`50` to invoke `print("Grade B")`.
 - **The Instant Exit Leap (`JUMP_FORWARD`):** Immediately after completing the print call, offset `52` executes a `JUMP_FORWARD 15` instruction. This causes the virtual machine's instruction pointer to skip over offsets `56` through `82` in a single bound-landing directly at offset `84`.
@@ -699,7 +699,7 @@ else:
 Slow down
 ```
 
-# Step-by-Step Breakdown
+### Step-by-Step Breakdown
 - **Initial Evaluation (`if`):** Python evaluates `light == "red"`, comparing `"yellow"` against `"red"`. The equality check evaluates to `False`, skipping the `"Stop"` print block.
 - **First `elif` Match:** Execution shifts to the next conditional block, `light == "yellow"`. Because the string values match exactly, the expression evaluates to `True`.
 - **Execution & Short-Circuit:** The corresponding indented suite executes, printing `"Slow down"`.
@@ -708,7 +708,7 @@ Slow down
 ## 🧠 What's happening behind the scenes:
 When routing states using string comparisons, CPython evaluates string equality through object pointers and pointer-optimized character comparisons at the C level, cascading to an unconditional exit offset upon success.
 
-# Disassembled Bytecode Layout
+### Disassembled Bytecode Layout
 ```text
 1           0 LOAD_NAME                0 (light)
               2 LOAD_CONST               0 ('red')
@@ -748,7 +748,7 @@ When routing states using string comparisons, CPython evaluates string equality 
              86 RETURN_VALUE
 ```
 
-# Low-Level String State Routing Mechanics
+### Low-Level String State Routing Mechanics
 - **String Equality Invocations (`PyUnicode_Compare`):** At offsets `4`, `32`, and `60`, `COMPARE_OP` invokes CPython's internal `PyUnicode_Compare` / `unicode_eq` routines. Python verifies pointer identity and string length headers before scanning underlying buffer bytes.
 - **Sequential Jump Pipeline:** The initial evaluation at offset `4` returns `False`, causing `POP_JUMP_IF_FALSE` to shift the VM instruction pointer straight to offset `28`.
 - **Target Match Execution:** At offset `32`, `"yellow" == "yellow"` returns `True`. The instruction pointer falls through into offsets `40–50` to invoke `print("Slow down")`.
@@ -768,7 +768,7 @@ else:
     print("Senior")
 ```
 
-# Output
+### Output
 ```text
 Adult
 ```
@@ -781,7 +781,7 @@ Adult
 ## 🧠 What's happening behind the scenes:
 When evaluating numerical range boundaries using `<` or `>`, CPython sequentially compares values on the evaluation stack and triggers jumps down the instruction pointer chain until a comparison returns `True`.
 
-# Disassembled Bytecode Layout
+### Disassembled Bytecode Layout
 ```text
 1           0 LOAD_NAME                0 (age)
               2 LOAD_CONST               0 (13)
@@ -821,7 +821,7 @@ When evaluating numerical range boundaries using `<` or `>`, CPython sequentiall
              86 RETURN_VALUE
 ```
 
-# Low-Level Range Evaluation Mechanics
+## Low-Level Range Evaluation Mechanics
 
 - **Sequential Stack Comparison:** The bytecode loads `age` (`25`) and `13` onto the stack. At offset `4`, `COMPARE_OP` compares the two values. Since the check fails, `POP_JUMP_IF_FALSE` pushes the instruction pointer straight to offset `28`.
 - **Second Cascade:** At offset `28`, `age` (`25`) and `20` are loaded. The comparison fails again at offset `32`, jumping execution straight to offset `56`.
@@ -846,7 +846,7 @@ else:
     print("Wear warm clothes")
 ```
 
-# Output
+### Output
 ```python
 It's cool
 Bring a light jacket
@@ -861,7 +861,7 @@ Bring a light jacket
 ## 🧠 What's happening behind the scenes:
 When an `elif` suite contains multiple statements, CPython groups all corresponding bytecodes sequentially. Once the final instruction in the matching block finishes, the VM issues a single `JUMP_FORWARD` to bypass all downstream branches.
 
-# Disassembled Bytecode Layout
+### Disassembled Bytecode Layout
 ```text
 1           0 LOAD_NAME                0 (temp)
               2 LOAD_CONST               0 (30)
@@ -920,7 +920,7 @@ When an `elif` suite contains multiple statements, CPython groups all correspond
 > From here on, I'm using an updated explanation style suggested by my close friends Emily and Charlotte. 
 > Please go to our GitHub Discussions tab to vote on which style you prefer!
 
-### Branch Ordering & Compiler Execution Mechanics
+# Branch Ordering & Compiler Execution Mechanics
 Evaluating conditions in an `if-elif-else` chain requires precise arrangement when dealing with overlapping ranges. Because Python evaluates the conditions of an `if-elif` chain sequentially from top to bottom, improper ordering can create logic traps where broad conditions preempt more restrictive ones.
 
 ## Level 1 — Language Semantics (What Python Specifies)
@@ -954,11 +954,11 @@ elif score >= 50:
     print("Grade C")
 ```
 
-# Output
+### Output
 ```text
 Grade A
 ```
-# Ordering Principle (Application Domain Rule):
+### Ordering Principle (Application Domain Rule):
 
 Python evaluates the `if` condition first, followed by each `elif` condition in sequence as necessary; exactly one suite-the first whose condition is true-is executed. For overlapping lower-bound conditions such as `score >= threshold`, placing the highest numerical threshold first is an application-level ordering rule that prevents broader conditions from matching prematurely.
 
@@ -1044,7 +1044,7 @@ dis.dis(test, show_offsets=True)
      - If `True` (as in $95 \ge 90$), the jump is not taken, and execution proceeds through `NOT_TAKEN` at offset `14`, allowing CPython's branch-monitoring machinery to record events for `sys.monitoring`.
 5. **Direct Function Return:** In this compilation, `RETURN_VALUE` at offset `40` terminates frame evaluation immediately after `print("Grade A")` completes, bypassing labels `L1`, `L2`, and `L3`.
 
-# Step-by-Step VM Execution Path Trace (`score = 95`)
+### Step-by-Step VM Execution Path Trace (`score = 95`)
 Tracing the bytecode execution path for `score = 95` illustrates how the first matching branch prevents remaining branch conditions from being evaluated:
 ```text
 LOAD_FAST_BORROW (score: 95) ──> LOAD_SMALL_INT (90) ──> COMPARE_OP (True) ──> POP_JUMP_IF_FALSE (Fallthrough)
@@ -1236,7 +1236,7 @@ dis.dis(get_day, show_offsets=True)
 4. **Matching Comparison (`day == 3`):** At offset `82`, `day` (`3`) is compared to `3` (`True`). `POP_JUMP_IF_FALSE` does not jump and falls through to `NOT_TAKEN`.
 5. **Execution & Direct Return:** At offset `120`, `RETURN_VALUE` terminates frame evaluation immediately after `print("Wednesday")` completes, bypassing labels `L3` through `L7`.
 
-# Step-by-Step VM Execution Path Trace (`day = 3`)
+### Step-by-Step VM Execution Path Trace (`day = 3`)
 ```text
 [offset 0..10]   day == 1 (False) ──> POP_JUMP_IF_FALSE ──> Jump to L1 (offset 42)
 [offset 42..50]  day == 2 (False) ──> POP_JUMP_IF_FALSE ──> Jump to L2 (offset 82)
@@ -1276,7 +1276,7 @@ match day:
 While lower level bytecode analysis reveals the mechanics of sequential evaluation, high-level code structure determines readability, maintainability, and baseline execution pathways. An `if-elif-else` control structure is the standard language primitive for multi-branch conditional logic when choices are **mutually exclusive** and must be evaluated in a **predetermined order**.
 
 ## Level 1 - Language Semantics & Application Patterns
-# 1. Mutually Exclusive Branch Selection
+### 1. Mutually Exclusive Branch Selection
 Use `if-elif-else` when domain logic requires at most one branch from several mutually exclusive possibilities to execute, with `else` providing an optional fallback. The semantic contract of `elif` guarantees that once a preceding condition evaluates to `True`, all subsequent conditions are completely ignored.
 ```python
 # Range-based categorization (Mutually Exclusive)
@@ -1333,7 +1333,7 @@ To determine whether an `if-elif-else` cascade is the optimal choice for a given
 A critical distinction in Python control flow lies between a single multi-branch decision tree (`if-elif-else`) and a series of independent conditional evaluations (multiple `if` statements). While both structures evaluate boolean expressions, their VM execution traces and semantic contracts differ fundamentally.
 
 ## Level 1 - Language Semantics & Behavior Comparison
-# Case 1: Independent `if` Statements (Multiple Decisions)
+### Case 1: Independent `if` Statements (Multiple Decisions)
 Independent `if` statements form separate conditional structures. If execution reaches each statement, each condition is evaluated independently, regardless of whether an earlier condition evaluated to `True` or `False`.
 ```python
 score = 85
@@ -1346,13 +1346,13 @@ if score >= 50:
     print("Grade C")
 ```
 
-# Output:
+**Output:**
 ```text
 Grade B
 Grade C
 ```
 
-# Evaluation Semantics:
+### Evaluation Semantics:
 1. `score >= 90` evaluates to `False` (skipped).
 2. `score >= 70` evaluates to `True` $\rightarrow$ executes `print("Grade B")`.
 3. `score >= 50` evaluates to `True` $\rightarrow$ executes `print("Grade C")`.
@@ -1373,12 +1373,12 @@ elif score >= 50:
     print("Grade C")
 ```
 
-# Output:
+**Output:**
 ```text
 Grade B
 ```
 
-# Evaluation Semantics:
+### Evaluation Semantics:
 1. `score >= 90` evaluates to `False` (skips branch).
 2. `score >= 70` evaluates to `True` $\rightarrow$ executes `print("Grade B")`.
 3. Remaining `elif` and `else` blocks are bypassed completely.
@@ -1399,7 +1399,7 @@ else:
     print("Unknown command")
 ```
 
-# Output:
+**Output:**
 ```text
 Unknown command
 ```
@@ -1411,7 +1411,7 @@ Unknown command
 > - **Independent `if` Blocks:** Every branch body ends by falling through directly to the next condition's evaluation bytecode offset.
 > - **`if-elif` Chain:** A failed condition transfers control to the next `elif` test. Once a condition matches, the remaining `elif` conditions are not evaluated; in this function, the matching branch falls through to `RETURN_VALUE`, which terminates the function before the later `elif` bytecode is reached.
 
-# Disassembly: Independent if Statements
+### Disassembly: Independent if Statements
 ```python
 import dis
 
@@ -1456,7 +1456,7 @@ dis.dis(check_independent, show_offsets=True)
 ```
 Note that after executing `print("Grade B")` (offset 36), control falls through directly to offset 38 (`L1`), evaluating the second `if` condition regardless of the first.
 
-# Disassembly: `if-elif` Chain
+### Disassembly: `if-elif` Chain
 ```python
 import dis
 
@@ -1530,16 +1530,16 @@ Chained 'if-elif' Trace:
 | **Evaluation Cost** | Evaluates each of the $N$ conditions reached by execution; earlier successful conditions do not suppress later `if` statements. | Worst-case $N$ checks; average-case short-circuits early. |
 | **State Dependencies** | Subsequent conditions cannot assume prior conditions failed. | Subsequent conditions implicitly know all prior conditions were `False`. |
 
-# Architectural Rules of Thumb
+### Architectural Rules of Thumb
 - **Independent `if` Statements:** Use when applying orthogonal filters or multi-pass validation rules (e.g., checking if a password has $\ge 8$ chars, contains a digit, AND contains a special character).
-- if-elif-else **Chains:** Use when classifying an entity into a discrete state or mutually exclusive bucket (e.g., HTTP status code handling, grade boundaries, or state machine transitions).
+- `if-elif-else` **Chains:** Use when classifying an entity into a discrete state or mutually exclusive bucket (e.g., HTTP status code handling, grade boundaries, or state machine transitions).
 
 
 ### Production Idioms & Structural Patterns
 Building directly on the execution mechanics established in **Previous Section**, this section details four foundational production idioms leveraging `if-elif-else` chains. Each pattern demonstrates how sequential short-circuiting maps to practical data classification and multi-branch routing.
 
 ## Level 1 - Idiomatic Implementations & Behavioral Semantics
-# Pattern 1: Continuous Range Mapping (Temperature Classifier)
+### Pattern 1: Continuous Range Mapping (Temperature Classifier)
 In continuous domain partitioning, range boundary checks take advantage of the implicit fall-through state: once a condition fails, subsequent `elif` blocks know that the lower bound has already been implicitly tested.
 
 ```python
@@ -1555,12 +1555,12 @@ else:
     print("Hot")
 ```
 
-# Output:
+**Output:**
 ```text
 Moderate
 ```
 
-# Evaluation Semantics:
+### Evaluation Semantics:
 1. `temperature < 10.0` evaluates to `False` ($22.5 \ge 10.0$).
 2. `temperature < 25.0` evaluates to `True` ($10.0 \le 22.5 < 25.0$) $\rightarrow$ executes `print("Moderate")`.
 3. Execution exits the conditional structure immediately.
@@ -1581,12 +1581,12 @@ else:
     print("Senior ticket: $15")
 ```
 
-# Output:
+**Output:**
 ```text
 Senior ticket: $15
 ```
 
-# Evaluation Semantics:
+### Evaluation Semantics:
 1. `age < 3`, `age < 18`, and `age < 65` all evaluate to `False`.
 2. Control falls through to the default `else` suite $\rightarrow$ executes `print("Senior ticket: $15")`.
 
@@ -1606,12 +1606,12 @@ else:
     print("Very strong password")
 ```
 
-# Output:
+**Output:**
 ```text
 Strong password
 ```
 
-# Evaluation Semantics:
+### Evaluation Semantics:
 1. `length < 6` evaluates to `False`.
 2. `length < 10` evaluates to `False` ($10 \nless 10$).
 3. `length < 15` evaluates to `True` ($10 < 15$) $\rightarrow$ executes `print("Strong password")`.
@@ -1634,12 +1634,12 @@ else:
     print("Invalid month")
 ```
 
-# Output:
+**Output:**
 ```text
 Summer
 ```
 
-# Evaluation Semantics:
+### Evaluation Semantics:
 1. Checks set inclusion for `8` across branches. `8 in [6, 7, 8]` evaluates to `True` in the 3rd branch.
 2. Executes `print("Summer")` and bypasses the remaining branches.
 
@@ -1735,12 +1735,12 @@ CONSTANT TABLE: detect_season.__code__.co_consts
 (12, 'Winter', 'Spring', 'Summer', 'Fall', 'Invalid month', None, (12, 1, 2), (3, 4, 5), (6, 7, 8), (9, 10, 11))
 ```
 
-# Bytecode Analysis:
+### Bytecode Analysis:
 - **Constant-Folding Optimization:** For a membership test against a literal collection of constants, CPython's compiler emits an immutable tuple constant in the observed bytecode rather than constructing the list at runtime. As confirmed by `co_consts`, `[12, 1, 2]` appears directly as constant `(12, 1, 2)` at offset 4.
 - **Membership Opcode (`CONTAINS_OP`):** Evaluates whether `month` is present inside the constant tuple. If `False`, `POP_JUMP_IF_FALSE` skips the branch suite and jumps directly to the next condition's offset (`L1`, `L2`, etc.).
 
 
-## Level 3 — Structural Execution Traces
+## Level 3 - Structural Execution Traces
 **Continuous Range Execution Trace (`temperature = 22.5`)**
 ```text
 [offset 0..4]   temperature < 10.0  ──> False
@@ -1750,7 +1750,7 @@ CONSTANT TABLE: detect_season.__code__.co_consts
 [offset 78..80] LOAD_CONST None ──> RETURN_VALUE (Exits Frame; L2/L3 never reached)
 ```
 
-# Set Membership Execution Trace (`month = 8`)
+### Set Membership Execution Trace (`month = 8`)
 ```text
 [offset 0..6]     8 in (12, 1, 2)  ──> False ──> Jump to L1 (offset 42)
 [offset 42..46]   8 in (3, 4, 5)   ──> False ──> Jump to L2 (offset 82)
@@ -1760,7 +1760,7 @@ CONSTANT TABLE: detect_season.__code__.co_consts
 ```
 
 ## Level 4 - Production Architectural Principles & Decision Rules
-# Core Engineering Constraints
+### Core Engineering Constraints
 1. **Implicit Boundary Knowledge:** In chained ranges (`< 10.0`, `< 25.0`, `< 35.0`), do not write redundant bounds like `elif 10.0 <= temperature < 25.0:`. Prior branches already guarantee `temperature >= 10.0`.
 2. **Order Sensitivity:** Conditions must be ordered logically (most restrictive/lowest threshold to least restrictive). Out-of-order bounds lead to unreachable code blocks.
 3. **Container Membership Overhead:** For literal constants, CPython automatically optimizes sequence membership tests via constant folding. For dynamic collections instantiated at runtime, prefer set lookups ($O(1)$) over list traversals ($O(N)$) when handling large element sets inside hot loops.
@@ -1778,7 +1778,7 @@ CONSTANT TABLE: detect_season.__code__.co_consts
 Building upon compound logic and architectural dispatch patterns, this section explores nested `if` **statements**-structures where an `if` statement resides inside another `if` block. This establishes a sequential, multi-tiered decision hierarchy where evaluation of the inner condition is reachable only if the parent condition succeeds.
 
 ## Level 1 - Idiomatic Implementations & Behavioral Semantics
-# Core Semantics & Applicability
+### Core Semantics & Applicability
 A nested `if` statement models a multi-step decision pipeline ("If Condition A passes, evaluate Condition B"). This pattern is distinct from `elif` chains: `elif` tests mutually exclusive alternative conditions at the same hierarchy level, whereas nesting creates dependent conditions where the inner suite is executed conditionally based on the outer condition's success.
 
 Use nested conditionals when:
@@ -1880,7 +1880,7 @@ NAMES TABLE: verify_access.__code__.co_names
 ```
 
 
-# Bytecode Analysis:
+### Bytecode Analysis:
 - **Hierarchical Jump Routing:** If `age >= 18` evaluates to False at offset 6, `POP_JUMP_IF_FALSE` at offset 10 transfers control directly to label `L2` (offset 84), bypassing both the intermediate `print` call (offsets 16-36) and the inner conditional setup entirely.
 - **Distinct Failure Targets:** In this CPython 3.14.7 snapshot, the outer failure (Line 4) jumps to `L2` at offset 84, while the inner failure (Line 6) jumps to `L1` at offset 80. Both targets execute identical frame-teardown sequences (`LOAD_CONST None` $\rightarrow$ `RETURN_VALUE`). These labels and their routing are implementation details of this particular compiled bytecode and should not be treated as a language-level guarantee.
 - **Nested Control-Flow Cascade:** Unlike compound `and` constructs that chain jumps across sequential boolean terms, nesting places the inner conditional setup (`offsets 38–46`) inside the reachable code path of the outer suite.
@@ -2141,7 +2141,7 @@ else:
 Entry allowed
 ```
 
-# Operational Path Resolution:
+### Operational Path Resolution:
 - **Path A (`age = 25`, `has_id = True`, `has_ticket = True`):**
   1. Level 1 check (`age >= 18`) succeeds.
   2. Level 2 check (`has_id`) succeeds.
@@ -2159,7 +2159,7 @@ Entry allowed
 > 
 > Bytecode shown in this section is an empirical snapshot captured directly from CPython 3.14.7 (`v3.14.7:823f032, Aug 5 2026`). Jump target labels, opcode choices (`POP_JUMP_IF_FALSE`), and stack instructions represent exact runtime operations.
 
-# Disassembly: Triple-Nested Access Verification (`verify_entry_deep`)
+### Disassembly: Triple-Nested Access Verification (`verify_entry_deep`)
 ```python
 import dis
 
@@ -2236,7 +2236,7 @@ NAMES TABLE: verify_entry_deep.__code__.co_names
 ('print',)
 ```
 
-# Bytecode Analysis:
+### Bytecode Analysis:
 - **Inverted Target Ordering:** In this CPython 3.14.7 compilation, the deepest nested failure suite appears first in the linear instruction stream (`L1` at offset 74), while the outermost failure suite appears last (`L3` at offset 126). This ordering is an implementation detail and is not guaranteed by Python's language semantics.
 
 - **Cascading Jump Targets:**
@@ -2246,7 +2246,7 @@ NAMES TABLE: verify_entry_deep.__code__.co_names
 - **Truthiness Conversion via TO_BOOL:** In this CPython 3.14.7 snapshot, direct truth-value tests such as `if has_id:` and `if has_ticket:` use `TO_BOOL` before the conditional jump.
 
 ## Level 3 - Structural Execution Traces
-# Case A: Outer Condition Fails (`age = 15`, `has_id = True`, `has_ticket = True`)
+### Case A: Outer Condition Fails (`age = 15`, `has_id = True`, `has_ticket = True`)
 ```text
 [offset 0..6]    age >= 18 (15 >= 18)        ──> False
 [offset 10]      POP_JUMP_IF_FALSE 56        ──> to L3 (offset 126)
@@ -2412,12 +2412,12 @@ if age >= 18:
         print("Access granted")  # Indented 8 spaces relative to top-level
 ```
 
-# Level 2 - Compilation & Empirical Bytecode Trace (CPython 3.14.7)
+## Level 2 - Compilation & Empirical Bytecode Trace (CPython 3.14.7)
 > 🧪 **Implementation Note - CPython 3.14.7 Empirical Snapshot**
 >
 > Bytecode shown in this section is an empirical snapshot captured directly from CPython 3.14.7 (`v3.14.7:823f032, Aug 5 2026`). Jump target labels, opcode choices (`POP_JUMP_IF_FALSE`), and stack management reflect exact VM mechanics.
 
-# Disassembly: Authentication & Authorization Flow (`authenticate_user`)
+### Disassembly: Authentication & Authorization Flow (`authenticate_user`)
 ```python
 import dis
 
@@ -2503,7 +2503,7 @@ NAMES TABLE: authenticate_user.__code__.co_names
 ```
 
 
-# Bytecode Analysis:
+## Bytecode Analysis:
 - **Short-Circuit Compound Routing:** The compound expression `username == "admin" and password == "secret123"` is compiled as sequential conditional tests. If the first comparison is false, control jumps directly to `L2`, so the password comparison is never reached. If the first comparison succeeds, execution falls through to the second comparison.
 - **Separation of Intermediary Operations:** The instruction stream places `CALL print("Login successful")` at `offsets 30..50` between the initial compound check and the inner dependent check `if is_admin:` (`offset 52`). This illustrates why compound `and` logic cannot replace nesting when intermediate execution is required.
 - **Credential-Check Failures:** In this snapshot, both failed comparisons at offsets 10 and 24 target `L2` (offset 164), routing to the invalid credentials branch. Non-admin authorization at offset 62 targets `L1` (offset 116).
@@ -2511,7 +2511,7 @@ NAMES TABLE: authenticate_user.__code__.co_names
 
 ## Level 3 - Structural Execution Traces
 
-#### Case A: Valid Admin Credentials (`username="admin"`, `password="secret123"`, `is_admin=True`)
+### Case A: Valid Admin Credentials (`username="admin"`, `password="secret123"`, `is_admin=True`)
 ```text
 [offset 2..6]    username == "admin"        ──> True  ──> Fallthrough
 [offset 16..20]  password == "secret123"    ──> True  ──> Fallthrough
@@ -2522,7 +2522,7 @@ NAMES TABLE: authenticate_user.__code__.co_names
 [offset 112..114] LOAD_CONST None ──> RETURN_VALUE (Frame exits via Admin path)
 ```
 
-# Case B: Valid Non-Admin Credentials (`username="admin"`, `password="secret123"`, `is_admin=False`)
+### Case B: Valid Non-Admin Credentials (`username="admin"`, `password="secret123"`, `is_admin=False`)
 ```text
 [offset 2..6]    username == "admin"        ──> True  ──> Fallthrough
 [offset 16..20]  password == "secret123"    ──> True  ──> Fallthrough
@@ -2535,7 +2535,7 @@ NAMES TABLE: authenticate_user.__code__.co_names
 [offset 160..162] LOAD_CONST None ──> RETURN_VALUE (Frame exits via L1)
 ```
 
-# Case C: Invalid Username (`username="guest"`, `password="secret123"`, `is_admin=False`)
+### Case C: Invalid Username (`username="guest"`, `password="secret123"`, `is_admin=False`)
 ```text
 [offset 2..6]    username == "admin" ("guest" == "admin") ──> False
 [offset 10]      POP_JUMP_IF_FALSE 64       ──> to L2 (offset 164)
@@ -2547,7 +2547,7 @@ NAMES TABLE: authenticate_user.__code__.co_names
 
 
 ## Level 4 - Systems Architecture & Refactoring Matrix
-# Comparison Matrix: Control Flow Architectural Strategies
+### Comparison Matrix: Control Flow Architectural Strategies
 
 | Architectural Metric | Compound `and` | Nested Decision Tree (`if` within `if`) | Guard Clauses (Flat Validation) |
 | :--- | :--- | :--- | :--- |
@@ -2586,7 +2586,7 @@ Grade B
 ```
 
 ```python
-# Pattern B: Dependent Preconditions (Nested if)
+### Pattern B: Dependent Preconditions (Nested if)
 age = 20
 has_permission = True
 
@@ -2602,7 +2602,7 @@ Age OK
 Permission OK
 ```
 
-### Behavioral Execution Differences
+## Behavioral Execution Differences
 | Evaluation Dimension | `elif` Alternative Chain | Nested `if` Structural Tree |
 | :--- | :--- | :--- |
 | **Branch Multiplicity** | Maximum of one branch suite executes. | Multiple branch suites can execute sequentially down the tree. |
@@ -2610,7 +2610,7 @@ Permission OK
 | **Short-Circuit Action** | First `True` condition executes its suite and jumps past all remaining `elif`/`else` blocks. | An outer `False` condition skips all nested blocks entirely. |
 
 
-## Level 2 — Compilation & Empirical Bytecode Trace (CPython 3.14.7)
+## Level 2 - Compilation & Empirical Bytecode Trace (CPython 3.14.7)
 > 🧪 **Implementation Note - CPython 3.14.7 Empirical Snapshot**
 >
 > Bytecode shown in this section is an empirical snapshot captured directly from CPython 3.14.7 (`v3.14.7:823f032, Aug 5 2026`). Jump target labels, opcode choices (`POP_JUMP_IF_FALSE`), and frame returns reflect exact runtime control paths.
