@@ -21,6 +21,7 @@ I am a **contributing member of the Python Software Foundation (PSF)**. This rep
 Current Progress:
 ✅ Chapter 1 – Variables & Memory
 ✅ Chapter 2 – Expressions & Operators
+✅ Chapter 3 – Conditional Statements & Control Flow
 
 Currently Working On:
 🔄 Next chapter in development
